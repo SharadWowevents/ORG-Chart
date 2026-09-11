@@ -214,7 +214,7 @@ export default function App() {
             {activeCompany?.logoUrl && screen === 'app' ? (
               <img className="brand-mark topbar-logo" src={activeCompany.logoUrl} alt="Logo" />
             ) : <DefaultBrandSvg />}
-            
+
             <div className="brand-copy">
               <span className="eyebrow">Org Chart Workspace</span>
               <h1 className="company-title">
@@ -233,7 +233,7 @@ export default function App() {
               )}
             </div>
           </div>
-          
+
           <div className="mode-controls">
             {screen === 'app' && (
               <div className="mode-toggle">
@@ -256,7 +256,7 @@ export default function App() {
             )}
 
             {userRole === 'user' && (
-               <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
+              <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
             )}
           </div>
         </div>
@@ -288,15 +288,16 @@ export default function App() {
               updateCompany={handleUpdateCompany}
               onDeleteCompany={() => window.confirm('Permanently delete this organization?') && handleDeleteCompany(activeCompany.id)}
               onChangePassword={handleChangePassword}
+              onViewChart={() => setMode('view')}
             />
           )
         )}
       </main>
       {/* GLOBAL MODAL FOR SUPER ADMIN PASSWORD CHANGE */}
       {showSuperAdminPwdModal && (
-        <ChangePasswordModal 
-          onClose={() => setShowSuperAdminPwdModal(false)} 
-          onSubmit={handleChangePassword} 
+        <ChangePasswordModal
+          onClose={() => setShowSuperAdminPwdModal(false)}
+          onSubmit={handleChangePassword}
         />
       )}
       <Modal payload={modalPayload} onClose={() => setModalPayload(null)} />

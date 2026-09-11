@@ -4,9 +4,6 @@ import { CameraSvg, LogoPlaceholderSvg } from './Icons';
 import { ChangePasswordModal } from './ChangePasswordModal';
 
 // ========================================================
-// 1. DYNAMIC POINT LIST (Moved outside to prevent focus loss)
-// ========================================================
-// ========================================================
 // 1. DYNAMIC POINT LIST (Polished, Professional UI)
 // ========================================================
 const DynamicPointList = ({ label, value, path, onUpdateField }) => {
@@ -42,11 +39,10 @@ const DynamicPointList = ({ label, value, path, onUpdateField }) => {
               onChange={e => handleUpdate(idx, e.target.value)} 
               placeholder={`Point ${idx + 1}`}
               style={{ 
-                paddingRight: items.length > 1 ? '32px' : '12px', // Leaves breathing room for the X
+                paddingRight: items.length > 1 ? '32px' : '12px',
                 width: '100%'
               }}
             />
-            {/* Soft, embedded remove icon */}
             {items.length > 1 && (
               <button 
                 type="button" 
@@ -76,7 +72,6 @@ const DynamicPointList = ({ label, value, path, onUpdateField }) => {
           </div>
         ))}
         
-        {/* Sleek text-link style add button */}
         <button 
           type="button" 
           onClick={handleAdd}
@@ -98,14 +93,13 @@ const DynamicPointList = ({ label, value, path, onUpdateField }) => {
     </div>
   );
 };
+
 // ========================================================
 // 2. MAIN ADMIN COMPONENT
 // ========================================================
-export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePassword }) => {
+export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePassword, onViewChart }) => {
   const [expandedKra, setExpandedKra] = useState({});
   const [showPwdModal, setShowPwdModal] = useState(false);
-  
-  // State to track which person's AI is currently loading
   const [isGenerating, setIsGenerating] = useState({});
 
   const updateField = (path, value) => {
@@ -132,13 +126,10 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
     }
   };
 
-  // --------------------------------------------------------
-  // AI Auto-Fill Generator
-  // --------------------------------------------------------
   const handleAutoSuggest = async (personId, path, roleTitle) => {
     if (!roleTitle) return alert("Please enter a Title/Designation first so the AI knows what to generate.");
     
-    setIsGenerating(p => ({ ...p, [personId]: true })); // Start loading
+    setIsGenerating(p => ({ ...p, [personId]: true }));
     
     try {
       const token = localStorage.getItem('token');
@@ -161,7 +152,6 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
       
       const data = await res.json();
       
-      // Update the state with the new AI-generated arrays (joined by \n)
       const clone = structuredClone(company);
       setPath(clone, `${path}.kraText`, (data.kras || []).join('\n'));
       setPath(clone, `${path}.kpiText`, (data.kpis || []).join('\n'));
@@ -171,13 +161,10 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
     } catch (err) {
       alert("AI Generation Error: " + err.message);
     } finally {
-      setIsGenerating(p => ({ ...p, [personId]: false })); // Stop loading
+      setIsGenerating(p => ({ ...p, [personId]: false }));
     }
   };
 
-  // --------------------------------------------------------
-  // Reusable Person Block Editor
-  // --------------------------------------------------------
   const renderPersonEditor = (path, person, color, titlePlaceholder, onRemove) => (
     <div className="repeat-row" style={{ '--card-accent': color }}>
       <div className="repeat-row-main">
@@ -196,7 +183,6 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
       
       {expandedKra[person.id] && (
         <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--border)' }}>
-          {/* AI Auto-fill Button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px' }}>
              <button 
                 className="btn btn-tiny" 
@@ -218,9 +204,6 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
     </div>
   );
 
-  // --------------------------------------------------------
-  // Main Render
-  // --------------------------------------------------------
   return (
     <div className="admin-shell">
       
@@ -311,7 +294,7 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
         ))}
       </section>
 
-      {/* 4. Departments & Teams */}
+      {/* 4. Departments */}
       <section className="admin-section">
         <div className="admin-section-head">
           <div className="admin-section-title">Departments</div>
@@ -376,6 +359,17 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
             </div>
           )
         })}
+      </section>
+
+      {/* NEW: View Chart Action Section */}
+      <section style={{ textAlign: 'center', padding: '20px 0 10px 0' }}>
+        <button 
+          className="btn btn-primary" 
+          onClick={onViewChart}
+          style={{ padding: '12px 40px', fontSize: '15px', borderRadius: '30px', boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)' }}
+        >
+          View Org Chart →
+        </button>
       </section>
 
       {/* 5. Danger Zone */}
