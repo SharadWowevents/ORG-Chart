@@ -212,7 +212,7 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
           <div className="admin-section-title">Create New Organization</div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {/* Note: Ensure setShowPwdModal is passed down or managed here if you want Admin to change their own password from Dashboard */}
-            <button className="btn btn-danger btn-tiny btn-ghost" onClick={onLogout}>Sign Out</button>
+            {/* <button className="btn btn-danger btn-tiny btn-ghost" onClick={onLogout}>Sign Out</button> */}
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
