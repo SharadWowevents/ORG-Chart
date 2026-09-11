@@ -1,0 +1,1357 @@
+<title>WOW Org Chart</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#FAF8FF;
+    --surface:#FFFFFF;
+    --surface-2:#F1EDFB;
+    --ink:#1B1730;
+    --ink-soft:#5B5470;
+    --border:#E4DEF5;
+    --border-strong:#CFC5EC;
+    --accent:#7C3AED;
+    --accent-ink:#FFFFFF;
+    --gold:#F5A524;
+    --danger:#E23E57;
+    --shadow: 0 8px 24px -12px rgba(43,26,89,0.22);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15111F;
+      --surface:#1E1830;
+      --surface-2:#271F3D;
+      --ink:#F3EFFF;
+      --ink-soft:#B6ABD6;
+      --border:#362C52;
+      --border-strong:#4A3D6E;
+      --accent:#A78BFA;
+      --accent-ink:#15111F;
+      --gold:#FBBF4A;
+      --danger:#FF6B81;
+      --shadow: 0 8px 28px -12px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15111F;
+    --surface:#1E1830;
+    --surface-2:#271F3D;
+    --ink:#F3EFFF;
+    --ink-soft:#B6ABD6;
+    --border:#362C52;
+    --border-strong:#4A3D6E;
+    --accent:#A78BFA;
+    --accent-ink:#15111F;
+    --gold:#FBBF4A;
+    --danger:#FF6B81;
+    --shadow: 0 8px 28px -12px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:"Fraunces", Georgia, serif; text-wrap:balance; margin:0; }
+  button, input, textarea{ font-family:inherit; font-size:inherit; color:inherit; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px 96px; }
+
+  /* ---------- topbar ---------- */
+  #topbar{ position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--border); }
+  .topbar-inner{ max-width:1180px; margin:0 auto; padding:18px 24px; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .brand-block{ display:flex; align-items:flex-start; gap:14px; min-width:0; }
+  .brand-mark{ flex:none; margin-top:4px; }
+  .topbar-logo{ height:38px; max-width:170px; object-fit:contain; border-radius:6px; }
+  .brand-copy{ min-width:0; }
+  .eyebrow{ display:block; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px; }
+  .company-title{ font-size:clamp(1.6rem, 3.4vw, 2.4rem); font-weight:700; color:var(--ink); }
+  .company-title-input{ font-family:"Fraunces", Georgia, serif; font-size:clamp(1.4rem, 3vw, 2rem); font-weight:700; width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border-strong); border-radius:12px; padding:8px 14px; }
+  .stats-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .stat-pill{ background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:5px 12px; font-size:12.5px; color:var(--ink-soft); font-weight:600; white-space:nowrap; }
+  .stat-pill b{ color:var(--ink); font-weight:800; }
+
+  .mode-controls{ display:flex; align-items:center; gap:10px; flex:none; }
+  .mode-toggle{ display:flex; background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
+  .mode-toggle button{ border:none; background:transparent; padding:8px 18px; border-radius:999px; font-weight:700; font-size:13px; color:var(--ink-soft); cursor:pointer; transition:background .18s, color .18s; }
+  .mode-toggle button.active{ background:var(--accent); color:var(--accent-ink); }
+  .readonly-badge{ font-size:12px; font-weight:700; color:var(--ink-soft); background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:7px 14px; }
+
+  #banner{ }
+  .banner{ max-width:1180px; margin:14px auto 0; padding:12px 18px; border-radius:12px; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--ink); font-size:13.5px; font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .banner button{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-weight:700; font-size:15px; line-height:1; padding:2px; }
+
+  /* ---------- buttons / fields ---------- */
+  .btn{ border-radius:10px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink); font-weight:700; padding:9px 16px; cursor:pointer; transition:transform .12s, box-shadow .12s, background .12s; }
+  .btn:hover{ background:var(--surface-2); }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn-ghost{ background:transparent; }
+  .btn-tiny{ padding:6px 12px; font-size:12.5px; border-radius:8px; }
+  .btn-danger{ color:var(--danger); border-color:var(--danger); background:transparent; }
+  .btn-danger:hover{ background:color-mix(in srgb, var(--danger) 12%, transparent); }
+
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label{ font-size:12px; font-weight:700; letter-spacing:.03em; color:var(--ink-soft); text-transform:uppercase; display:flex; gap:6px; align-items:baseline; }
+  .field label span{ text-transform:none; font-weight:500; letter-spacing:0; color:var(--ink-soft); opacity:.8; font-size:11.5px; }
+  .field input[type="text"], .field input[type="password"], .field select, .field textarea{ border:1px solid var(--border-strong); background:var(--surface); color:var(--ink); border-radius:10px; padding:10px 12px; resize:vertical; width:100%; }
+  .field input[type="text"]:focus, .field input[type="password"]:focus, .field select:focus, .field textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  /* ---------- auth screens ---------- */
+  .auth-shell{ display:flex; justify-content:center; padding:56px 16px; }
+  .auth-card{ background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px 30px; max-width:380px; width:100%; box-shadow:var(--shadow); }
+  .auth-title{ font-family:"Fraunces", Georgia, serif; font-size:1.4rem; font-weight:700; margin-bottom:6px; }
+  .auth-sub{ font-size:13px; color:var(--ink-soft); margin:0 0 20px; }
+  .auth-hint{ font-size:11.5px; color:var(--ink-soft); margin:-8px 0 14px; }
+  .auth-error{ background:color-mix(in srgb, var(--danger) 12%, transparent); border:1px solid var(--danger); color:var(--danger); border-radius:10px; padding:8px 12px; font-size:12.5px; font-weight:600; margin-bottom:12px; }
+  .auth-divider{ text-align:center; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.08em; margin:18px 0; position:relative; }
+  .auth-divider::before, .auth-divider::after{ content:""; position:absolute; top:50%; width:38%; height:1px; background:var(--border); }
+  .auth-divider::before{ left:0; }
+  .auth-divider::after{ right:0; }
+
+  .manage-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:4px; }
+  .manage-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--bg-soft, #f6f5f2); border:1px solid var(--border); border-radius:12px; padding:9px 12px; }
+  .manage-row-main{ min-width:0; }
+  .manage-row-name{ font-weight:700; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .manage-row-sub{ font-size:11.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* ---------- sections / headings ---------- */
+  .section{ margin-top:44px; }
+  .section-title{ font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+  .section-title::after{ content:""; flex:1; height:1px; background:var(--border); }
+  .section-head-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .section-head-row .section-title{ margin-bottom:0; flex:1; min-width:140px; }
+
+  /* ---------- zoom controls ---------- */
+  .zoom-controls{ display:flex; align-items:center; gap:2px; background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:3px; flex:none; }
+  .zoom-btn{ border:none; background:transparent; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--ink); cursor:pointer; }
+  .zoom-btn:hover:not(:disabled){ background:var(--surface); }
+  .zoom-btn:disabled{ opacity:.35; cursor:not-allowed; }
+  .zoom-pct{ font-size:12px; font-weight:800; color:var(--ink-soft); min-width:42px; text-align:center; }
+  .zoom-reset{ margin-left:4px; }
+
+  /* ---------- leadership ---------- */
+  .leadership-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; }
+
+  /* ---------- executive assistant ---------- */
+  .ea-row-wrap{ display:flex; flex-direction:column; align-items:center; margin-top:20px; }
+  .ea-row-wrap::before{ content:""; width:2px; height:18px; background:var(--border-strong); margin:0 auto 10px; }
+  .ea-row-label{ font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+  .ea-row{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+  .ea-card{ display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .ea-supports{ font-size:11px; color:var(--ink-soft); font-weight:600; max-width:180px; text-align:center; }
+  .modal-supports{ margin:2px 0 0; color:var(--ink-soft); font-weight:600; font-size:13px; }
+
+  /* ---------- person card ---------- */
+  .person-card{ display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--card-accent, var(--accent)); border-radius:16px; padding:12px 18px 12px 14px; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s, box-shadow .15s; min-width:200px; }
+  .person-card:hover, .person-card:focus-visible{ transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(43,26,89,.32); outline:none; }
+  .person-card--sm{ min-width:170px; padding:9px 14px 9px 12px; }
+  .avatar{ flex:none; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; font-size:15px; letter-spacing:.02em; }
+  .avatar--sm{ width:38px; height:38px; font-size:13px; }
+  .avatar--lg{ width:64px; height:64px; font-size:20px; }
+  .avatar--photo{ padding:0; }
+  .avatar-img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; }
+  .avatar-upload{ cursor:pointer; position:relative; }
+  .avatar-upload-badge{ position:absolute; right:-3px; bottom:-3px; width:16px; height:16px; border-radius:50%; background:var(--surface); border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
+  .avatar-upload-badge svg{ display:block; }
+  .person-meta{ display:flex; flex-direction:column; min-width:0; }
+  .person-name{ font-weight:800; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px; }
+  .person-role{ font-size:12.5px; color:var(--ink-soft); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px; }
+
+  /* ---------- org chart root & nodes ---------- */
+  .org-root{ display:inline-flex; flex-direction:column; align-items:center; gap:14px; background:var(--surface-2); border:2px solid var(--border-strong); border-radius:22px; padding:18px 30px 22px; }
+  .org-root-label{ font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .dept-node, .dept-node--manager{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .dept-pill{ color:#fff; font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; padding:4px 13px; border-radius:999px; white-space:nowrap; max-width:220px; overflow:hidden; text-overflow:ellipsis; }
+  .node-toggle{ display:flex; align-items:center; gap:4px; border:1px solid var(--border-strong); background:var(--surface); color:var(--card-accent, var(--ink-soft)); border-radius:999px; padding:3px 11px 3px 8px; cursor:pointer; font-size:11px; font-weight:800; }
+  .node-toggle:hover{ background:var(--surface-2); }
+  .node-toggle svg{ display:block; }
+  .node-count{ min-width:12px; text-align:center; }
+
+  /* ---------- tree ---------- */
+  .tree{ overflow:auto; padding:10px 4px 34px; display:flex; justify-content:center; }
+  .tree-zoom{ transform-origin:top center; }
+  .tree ul{ display:flex; padding-top:30px; position:relative; margin:0; }
+  .tree-zoom > ul{ justify-content:center; }
+  .tree li{ list-style:none; display:flex; flex-direction:column; align-items:center; position:relative; padding:30px 16px 0; }
+  .tree li::before, .tree li::after{ content:""; position:absolute; top:0; width:50%; height:30px; border-top:2px solid var(--dept-color); }
+  .tree li::before{ right:50%; border-right:2px solid var(--dept-color); }
+  .tree li::after{ left:50%; }
+  .tree li:only-child{ padding-top:0; }
+  .tree li:only-child::before, .tree li:only-child::after{ display:none; }
+  .tree li:first-child::before{ border-color:transparent; }
+  .tree li:last-child::after{ border-color:transparent; }
+  .tree li:last-child::before{ border-radius:0 10px 0 0; }
+  .tree li:first-child::after{ border-radius:10px 0 0 0; }
+  .tree ul ul::before{ content:""; position:absolute; top:0; left:50%; width:0; height:30px; border-left:2px solid var(--dept-color); }
+  .tree-empty{ color:var(--ink-soft); font-size:13.5px; font-weight:600; padding:10px 4px; }
+
+  /* ---------- empty state ---------- */
+  .empty-state{ text-align:center; padding:48px 24px; background:var(--surface); border:1.5px dashed var(--border-strong); border-radius:20px; color:var(--ink-soft); }
+  .empty-state svg{ color:var(--border-strong); margin-bottom:10px; }
+  .empty-state p{ margin:0; }
+  .empty-state-title{ font-weight:800; color:var(--ink); font-size:1.05rem; margin-bottom:4px !important; }
+  .admin-empty{ color:var(--ink-soft); font-size:13.5px; font-style:italic; padding:6px 2px; }
+  .admin-empty--sm{ padding-left:2px; }
+
+  /* ---------- modal ---------- */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(20,15,35,.55); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100; animation:fadeIn .15s ease; }
+  .modal{ background:var(--surface); border-radius:22px; padding:28px 30px 26px; max-width:640px; width:100%; max-height:86vh; overflow-y:auto; position:relative; box-shadow:0 30px 60px -20px rgba(0,0,0,.4); border-top:6px solid var(--card-accent); animation:popIn .18s ease; }
+  .modal-close{ position:absolute; top:16px; right:16px; background:var(--surface-2); border:none; width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--ink-soft); }
+  .modal-close:hover{ background:var(--border); color:var(--ink); }
+  .modal-head{ display:flex; align-items:center; gap:16px; margin-bottom:22px; padding-right:36px; }
+  .modal-name{ font-size:1.5rem; font-weight:700; }
+  .modal-role{ margin:4px 0 0; color:var(--ink-soft); font-weight:600; font-size:13.5px; }
+  .modal-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:20px; }
+  .modal-col-title{ font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--card-accent); margin-bottom:10px; }
+  .modal-list{ margin:0; padding-left:20px; display:flex; flex-direction:column; gap:7px; }
+  .modal-list li{ font-size:13.5px; font-weight:600; }
+  .modal-empty{ font-size:13px; color:var(--ink-soft); font-style:italic; margin:0; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  @keyframes popIn{ from{opacity:0; transform:scale(.94) translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* ---------- admin ---------- */
+  .admin-shell{ display:flex; flex-direction:column; gap:20px; }
+  .admin-section{ background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:22px 24px; }
+  .admin-section-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .admin-section-title{ font-family:"Fraunces", Georgia, serif; font-weight:700; font-size:1.15rem; }
+  .admin-section-hint{ font-family:"Manrope", sans-serif; font-weight:600; font-size:12.5px; color:var(--ink-soft); margin-left:8px; }
+
+  .logo-upload-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .logo-upload{ display:inline-flex; align-items:center; gap:12px; cursor:pointer; }
+  .logo-preview-img{ height:48px; max-width:150px; object-fit:contain; border-radius:8px; background:var(--surface-2); padding:4px 8px; border:1px solid var(--border); }
+  .logo-preview-empty{ width:48px; height:48px; border-radius:12px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--ink-soft); border:1.5px dashed var(--border-strong); }
+  .logo-upload-label{ font-size:13px; font-weight:700; color:var(--accent); }
+
+  .repeat-row{ border:1px solid var(--border); border-left:4px solid var(--card-accent, var(--accent)); border-radius:14px; padding:12px 14px; margin-bottom:10px; background:var(--surface); }
+  .repeat-row-main{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .rr-name{ flex:1 1 180px; min-width:140px; border:1px solid var(--border-strong); border-radius:9px; padding:8px 11px; background:var(--surface); }
+  .rr-title{ flex:1 1 180px; min-width:140px; border:1px solid var(--border-strong); border-radius:9px; padding:8px 11px; background:var(--surface); }
+  .rr-kra-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border); }
+  .rr-kra-grid textarea{ width:100%; }
+
+  .dept-editor{ border:1px solid var(--border); border-left:6px solid var(--card-accent); border-radius:18px; padding:18px 20px; margin-bottom:16px; background:var(--surface-2); }
+  .dept-editor-head{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .dept-editor-head .rr-name{ flex:1 1 200px; font-weight:700; }
+  .dept-editor-body{ display:flex; flex-direction:column; gap:6px; }
+  .dept-editor-label{ font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); display:flex; align-items:center; justify-content:space-between; margin:14px 0 8px; }
+  .dept-editor-label--sm{ font-size:10.5px; margin:10px 0 6px; }
+  .manager-block{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 14px 14px; margin-bottom:10px; }
+  .team-block{ margin-top:8px; padding-left:16px; border-left:2px dotted var(--border-strong); }
+
+  .ea-editor{ margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed var(--border); }
+  .ea-editor:last-child{ margin-bottom:0; padding-bottom:0; border-bottom:none; }
+  .ea-supports-picker{ margin:4px 0 2px 56px; }
+  .ea-supports-picker-label{ font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:6px; }
+  .ea-supports-options{ display:flex; flex-wrap:wrap; gap:8px; }
+  .ea-support-chip{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:5px 11px; cursor:pointer; }
+  .ea-support-chip input{ margin:0; accent-color:var(--accent); }
+
+  .savebar{ position:sticky; bottom:0; margin-top:24px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px; box-shadow:var(--shadow); flex-wrap:wrap; }
+  .save-status{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .person-name, .person-role{ max-width:120px; }
+    .wrap{ padding:0 14px 80px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001s !important; transition-duration:0.001s !important; }
+  }
+</style>
+
+<header id="topbar"></header>
+<div id="banner"></div>
+<main class="wrap">
+  <div id="app"></div>
+</main>
+<div id="modal-root"></div>
+
+<script id="org-chart-data" type="application/json">{"companyName":"ABC Inc","logoUrl":"","leadership":[{"id":"lead-1","name":"Sachin Talwar","title":"Director","kraText":"Company vision & growth strategy\nKey client & partner relationships\nOverall P&L ownership","kpiText":"YoY revenue growth\nClient retention rate\nEBITDA margin","cadenceText":"Weekly leadership sync\nMonthly business review","photoUrl":"data:image/jpeg;base64,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"},{"id":"id-nns58f32een0","name":"Amit Talwar","title":"Director","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}],"eas":[{"id":"id-kog3lqpxlh8z","name":"Unnimaya","title":"Executive Assistant","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","supportsIds":["lead-1"]}],"departments":[{"id":"id-73r2twffxk8e","name":"Marketing & Sales","colorIndex":0,"hod":{"id":"id-5qvj4k0sxk8e","name":"Neha Johar","title":"HOD","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},"managers":[{"id":"id-l2fbl5jay1l5","name":"Amit Talwar","title":"NBD","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-9iepof79z0e5","name":"Arya Bala","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-z1c4n52az7bp","name":"Siwani","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]},{"id":"id-5t9ll682zph6","name":"Amit Talwar","title":"Sales","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-hwfnney303bb","name":"Amit Talwar","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-jf9eotdl07uz","name":"Neha Johar","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]},{"id":"id-ebgndznv0jm4","name":"Amit Talwar","title":"Sales Operations","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-4gdev8yd0spw","name":"Nitin","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-wn246ims0wqc","name":"Rajat","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]}]},{"id":"id-xklxt0d7281x","name":"Creative","colorIndex":1,"hod":{"id":"id-c4h0cbr4281x","name":"Sachin Talwar","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},"managers":[{"id":"id-apy183y62jqb","name":"Namit","title":"Concept & Copy","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-ltrnoc63yt3r","name":"Parkriti","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]},{"id":"id-t5s6prhb2wvg","name":"Bhupender","title":"2D","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-2utnjxo0yz5d","name":"Ravinder","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-hv6jyqypz9df","name":"Bhavya","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-n7bsdpuazc4q","name":"Gaurav","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-28j5q6ewzheb","name":"Vishal","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]},{"id":"id-b54pa905372k","name":"Divyanshu","title":"3D","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-2l7ezhx9zn81","name":"Balish","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-xc50uy8nzr8y","name":"Rakesh","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-u30bnsjyzu2s","name":"Nakul","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-6l9597c3zwxt","name":"Aadarsh","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-eu4e5jso07ui","name":"Sagar","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]},{"id":"id-tn83uopr3um1","name":"Sagar","title":"Video","kraText":"","kpiText":"","cadenceText":"","photoUrl":"","team":[{"id":"id-hdliwlz90p4y","name":"Rahul","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""},{"id":"id-ahnt6qot11lt","name":"Ankit","title":"","kraText":"","kpiText":"","cadenceText":"","photoUrl":""}]}]}]}</script>
+<script>
+(function(){
+  "use strict";
+
+  var DEPT_PALETTE = ["#F0645A","#F2A93B","#23B5A6","#4E8DF5","#B15CE0","#3FBF63","#F2578C","#3FA7C9"];
+
+  var APP = null;
+  var activeCompanyId = null;
+  var screen = "login";
+  var orgData = null;
+  var mode = "view";
+  var isReadOnly = false;
+  var artifactApi = null;
+  var collapsedNodes = {};
+  var adminExpandedKra = {};
+  var openPersonId = null;
+  var pendingLoginCompanyId = null;
+  var PERSON_INDEX = {};
+  var bannerTimer = null;
+  var zoomLevel = 1;
+  var ZOOM_MIN = 0.5, ZOOM_MAX = 1.75, ZOOM_STEP = 0.1;
+
+  function uid(){ return "id-" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+  function escapeHtml(str){
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function(ch){
+      return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[ch];
+    });
+  }
+
+  function linesOf(str){
+    return String(str || "").split("\n").map(function(s){ return s.trim(); }).filter(Boolean).slice(0,5);
+  }
+
+  function initials(name){
+    var parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return "?";
+    var a = parts[0][0] || "";
+    var b = parts.length > 1 ? (parts[parts.length-1][0] || "") : "";
+    return (a + b).toUpperCase();
+  }
+
+  function cameraSvg(){
+    return '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.1" stroke="currentColor" stroke-width="1.8"/></svg>';
+  }
+  function plusSvg(){
+    return '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  }
+  function minusSvg(){
+    return '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  }
+  function logoPlaceholderSvg(){
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M7.5 15.5l3.2-3.6 2.4 2.4 3.4-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function fileToSquareDataUrl(file, size, quality, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var side = Math.min(img.naturalWidth, img.naturalHeight) || 1;
+        var sx = (img.naturalWidth - side) / 2, sy = (img.naturalHeight - side) / 2;
+        var canvas = document.createElement("canvas");
+        canvas.width = size; canvas.height = size;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        try{ cb(canvas.toDataURL("image/jpeg", quality)); }catch(err){ cb(null); }
+      };
+      img.onerror = function(){ cb(null); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ cb(null); };
+    reader.readAsDataURL(file);
+  }
+
+  function fileToFitDataUrl(file, maxW, maxH, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+        var w = Math.max(1, Math.round(img.naturalWidth * ratio));
+        var h = Math.max(1, Math.round(img.naturalHeight * ratio));
+        var canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        try{ cb(canvas.toDataURL("image/png")); }catch(err){ cb(null); }
+      };
+      img.onerror = function(){ cb(null); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ cb(null); };
+    reader.readAsDataURL(file);
+  }
+
+  function newPerson(){
+    return { id: uid(), name:"", title:"", kraText:"", kpiText:"", cadenceText:"", photoUrl:"", team: [] };
+  }
+  function newEA(){
+    return { id: uid(), name:"", title:"Executive Assistant", kraText:"", kpiText:"", cadenceText:"", photoUrl:"", supportsIds: [] };
+  }
+  function newDept(){
+    return { id: uid(), name:"", colorIndex: orgData.departments.length, hod:newPerson(), managers:[] };
+  }
+  function deptColor(d){ return DEPT_PALETTE[Math.abs(d.colorIndex||0) % DEPT_PALETTE.length]; }
+
+  function normalizePerson(p){
+    p = p || {};
+    return {
+      id: p.id || uid(),
+      name: p.name || "",
+      title: p.title || "",
+      kraText: p.kraText || "",
+      kpiText: p.kpiText || "",
+      cadenceText: p.cadenceText || "",
+      photoUrl: p.photoUrl || ""
+    };
+  }
+  function normalizeEA(p){
+    p = p || {};
+    return {
+      id: p.id || uid(),
+      name: p.name || "",
+      title: p.title || "Executive Assistant",
+      kraText: p.kraText || "",
+      kpiText: p.kpiText || "",
+      cadenceText: p.cadenceText || "",
+      photoUrl: p.photoUrl || "",
+      supportsIds: Array.isArray(p.supportsIds) ? p.supportsIds.filter(function(x){ return typeof x === "string"; }) : []
+    };
+  }
+  function findPersonById(id){
+    for(var i=0;i<orgData.leadership.length;i++){ if(orgData.leadership[i].id === id) return orgData.leadership[i]; }
+    for(var e=0;e<(orgData.eas||[]).length;e++){ if(orgData.eas[e].id === id) return orgData.eas[e]; }
+    for(var d=0; d<orgData.departments.length; d++){
+      var dept = orgData.departments[d];
+      if(dept.hod.id === id) return dept.hod;
+      for(var m=0; m<dept.managers.length; m++){
+        if(dept.managers[m].id === id) return dept.managers[m];
+        for(var t=0; t<dept.managers[m].team.length; t++){
+          if(dept.managers[m].team[t].id === id) return dept.managers[m].team[t];
+        }
+      }
+    }
+    return null;
+  }
+  function normalizeData(d){
+    d = d || {};
+    var out = {
+      id: d.id || uid(),
+      companyName: d.companyName || "",
+      adminName: d.adminName || "",
+      email: d.email || d.username || "",
+      password: d.password || "",
+      logoUrl: d.logoUrl || "",
+      leadership: [], eas: [], departments: []
+    };
+    (d.leadership || []).forEach(function(p){ out.leadership.push(normalizePerson(p)); });
+    (d.eas || []).forEach(function(p){ out.eas.push(normalizeEA(p)); });
+    (d.departments || []).forEach(function(dept, i){
+      var nd = {
+        id: dept.id || uid(),
+        name: dept.name || "",
+        colorIndex: typeof dept.colorIndex === "number" ? dept.colorIndex : i,
+        hod: normalizePerson(dept.hod),
+        managers: []
+      };
+      (dept.managers || []).forEach(function(m){
+        var nm = normalizePerson(m);
+        nm.team = (m.team || []).map(normalizePerson);
+        nd.managers.push(nm);
+      });
+      out.departments.push(nd);
+    });
+    return out;
+  }
+
+  function newCompanyRecord(name, adminName, email, password){
+    return normalizeData({ companyName: name || "", adminName: adminName || "", email: email || "", password: password || "" });
+  }
+
+  function normalizeApp(raw){
+    raw = raw || {};
+    var companies;
+    if(Array.isArray(raw.companies)){
+      companies = raw.companies.map(normalizeData);
+    } else if(raw.companyName !== undefined || raw.departments !== undefined || raw.leadership !== undefined){
+      // legacy single-company document — migrate into the multi-company shape
+      companies = [normalizeData({
+        id: raw.id || "company-1",
+        companyName: raw.companyName,
+        logoUrl: raw.logoUrl,
+        adminName: raw.adminName || "",
+        email: raw.email || raw.username || "admin",
+        password: raw.password || "admin123",
+        leadership: raw.leadership,
+        eas: raw.eas,
+        departments: raw.departments
+      })];
+    } else {
+      companies = [];
+    }
+    if(!companies.length){ companies = [ newCompanyRecord("My Company", "", "admin@company.com", "admin123") ]; }
+    return { companies: companies };
+  }
+
+  function findCompanyById(id){
+    for(var i=0;i<APP.companies.length;i++){ if(APP.companies[i].id === id) return APP.companies[i]; }
+    return null;
+  }
+
+  function saveActiveCompany(id){ try{ localStorage.setItem("orgchart-active-company", id); }catch(e){} }
+  function clearActiveCompany(){ try{ localStorage.removeItem("orgchart-active-company"); }catch(e){} }
+  function restoreSession(){
+    try{
+      var savedId = localStorage.getItem("orgchart-active-company");
+      if(savedId){
+        var found = findCompanyById(savedId);
+        if(found){ activeCompanyId = found.id; orgData = found; screen = "app"; mode = "view"; }
+      }
+    }catch(e){}
+  }
+
+  function getPath(obj, path){
+    var parts = path.split(".");
+    var cur = obj;
+    for(var i=0;i<parts.length;i++){ if(cur == null) return undefined; cur = cur[parts[i]]; }
+    return cur;
+  }
+  function setPath(obj, path, value){
+    var parts = path.split(".");
+    var cur = obj;
+    for(var i=0;i<parts.length-1;i++){
+      var key = /^\d+$/.test(parts[i]) ? parseInt(parts[i],10) : parts[i];
+      cur = cur[key];
+      if(cur == null) return;
+    }
+    var last = parts[parts.length-1];
+    cur[last] = value;
+  }
+
+  /* ---------------- rendering: shared chrome ---------------- */
+
+  function countStats(){
+    var depts = orgData.departments.length, hods = 0, mgrs = 0, team = 0;
+    orgData.departments.forEach(function(d){
+      if(d.hod && d.hod.name && d.hod.name.trim()) hods++;
+      mgrs += d.managers.length;
+      d.managers.forEach(function(m){ team += m.team.length; });
+    });
+    var eas = (orgData.eas || []).length;
+    var people = orgData.leadership.length + eas;
+    orgData.departments.forEach(function(d){
+      people += 1 + d.managers.length;
+      d.managers.forEach(function(m){ people += m.team.length; });
+    });
+    return { depts:depts, hods:hods, eas:eas, mgrs:mgrs, team:team, people:people };
+  }
+
+  function defaultBrandSvg(){
+    return (
+      '<svg class="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">' +
+        '<circle cx="16" cy="7" r="4.2" fill="var(--accent)"/>' +
+        '<path d="M16 11.2 V17 M16 17 H8 M16 17 H24 M8 17 V19.5 M24 17 V19.5" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '<circle cx="8" cy="23.5" r="3.6" fill="var(--gold)"/>' +
+        '<circle cx="24" cy="23.5" r="3.6" fill="var(--gold)"/>' +
+      "</svg>"
+    );
+  }
+
+  function renderLoginTopbar(){
+    var el = document.getElementById("topbar");
+    el.innerHTML =
+      '<div class="topbar-inner">' +
+        '<div class="brand-block">' +
+          defaultBrandSvg() +
+          '<div class="brand-copy">' +
+            '<span class="eyebrow">Org Chart</span>' +
+            '<h1 class="company-title">Multi-company workspace</h1>' +
+          "</div>" +
+        "</div>" +
+      "</div>";
+  }
+
+  function renderTopbar(){
+    var el = document.getElementById("topbar");
+    var stats = countStats();
+    var titleHtml = mode === "admin"
+      ? ""
+      : '<h1 class="company-title">' + escapeHtml(orgData.companyName || "Untitled company") + "</h1>";
+    var brandMarkHtml = orgData.logoUrl
+      ? '<img class="brand-mark topbar-logo" src="' + orgData.logoUrl + '" alt="' + escapeHtml(orgData.companyName || "Company") + ' logo">'
+      : defaultBrandSvg();
+
+    el.innerHTML =
+      '<div class="topbar-inner">' +
+        '<div class="brand-block">' +
+          brandMarkHtml +
+          '<div class="brand-copy">' +
+            '<span class="eyebrow">Org Chart</span>' +
+            titleHtml +
+            '<div class="stats-row">' +
+              '<span class="stat-pill"><b>' + stats.depts + "</b> Departments</span>" +
+              '<span class="stat-pill"><b>' + stats.hods + "</b> HODs</span>" +
+              '<span class="stat-pill"><b>' + stats.eas + "</b> EAs</span>" +
+              '<span class="stat-pill"><b>' + stats.mgrs + "</b> Managers</span>" +
+              '<span class="stat-pill"><b>' + stats.team + "</b> Team members</span>" +
+              '<span class="stat-pill"><b>' + stats.people + "</b> People total</span>" +
+            "</div>" +
+          "</div>" +
+        "</div>" +
+        '<div class="mode-controls">' +
+          (isReadOnly
+            ? '<span class="readonly-badge">Read-only view</span>'
+            : '<div class="mode-toggle" role="tablist">' +
+                '<button type="button" data-mode="view" class="' + (mode==="view"?"active":"") + '">View</button>' +
+                '<button type="button" data-mode="admin" class="' + (mode==="admin"?"active":"") + '">Settings</button>' +
+              "</div>") +
+          '<button type="button" class="btn btn-ghost btn-tiny" data-action="go-admin" title="Manage companies">Admin</button>' +
+        "</div>" +
+      "</div>";
+  }
+
+  function showBanner(text, opts){
+    opts = opts || {};
+    var el = document.getElementById("banner");
+    if(bannerTimer){ clearTimeout(bannerTimer); bannerTimer = null; }
+    el.innerHTML = '<div class="banner"><span>' + escapeHtml(text) + '</span><button type="button" data-banner-close aria-label="Dismiss">&times;</button></div>';
+    if(!opts.sticky){
+      bannerTimer = setTimeout(function(){ el.innerHTML = ""; }, 4200);
+    }
+  }
+  function clearBanner(){ document.getElementById("banner").innerHTML = ""; if(bannerTimer){ clearTimeout(bannerTimer); } }
+
+  /* ---------------- rendering: view mode ---------------- */
+
+  function renderPersonCard(person, opts){
+    opts = opts || {};
+    var color = opts.color || "var(--accent)";
+    PERSON_INDEX[person.id] = {
+      name: person.name || "Unnamed",
+      title: opts.roleLabel || person.title || "",
+      deptName: opts.deptName || "",
+      color: color,
+      photoUrl: person.photoUrl || "",
+      supports: opts.supports || [],
+      kras: linesOf(person.kraText),
+      kpis: linesOf(person.kpiText),
+      cadence: linesOf(person.cadenceText)
+    };
+    var cls = "person-card" + (opts.small ? " person-card--sm" : "");
+    var avatarInner = person.photoUrl
+      ? '<img class="avatar-img" src="' + person.photoUrl + '" alt="">'
+      : escapeHtml(initials(person.name));
+    var avatarCls = "avatar" + (opts.small ? " avatar--sm" : "") + (person.photoUrl ? " avatar--photo" : "");
+    var avatarStyle = person.photoUrl ? "" : "background:" + color;
+    return (
+      '<div class="' + cls + '" data-person-id="' + person.id + '" style="--card-accent:' + color + '" tabindex="0" role="button" aria-haspopup="dialog">' +
+        '<span class="' + avatarCls + '" style="' + avatarStyle + '">' + avatarInner + "</span>" +
+        '<span class="person-meta">' +
+          '<span class="person-name">' + escapeHtml(person.name || "Unnamed") + "</span>" +
+          '<span class="person-role">' + escapeHtml(opts.roleLabel || person.title || "") + "</span>" +
+        "</span>" +
+      "</div>"
+    );
+  }
+
+  function chevronSvg(collapsed){
+    var rot = collapsed ? "-90deg" : "0deg";
+    return '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" style="transform:rotate(' + rot + ');transition:transform .18s"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  /* ---------------- zoom ---------------- */
+
+  function loadZoom(){
+    try{
+      var v = parseFloat(localStorage.getItem("orgchart-zoom"));
+      if(!isNaN(v) && v >= ZOOM_MIN && v <= ZOOM_MAX) zoomLevel = v;
+    }catch(e){}
+  }
+  function saveZoom(){ try{ localStorage.setItem("orgchart-zoom", String(zoomLevel)); }catch(e){} }
+  function setZoom(next){
+    zoomLevel = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+    saveZoom();
+    applyZoom();
+  }
+  function applyZoom(){
+    var el = document.getElementById("tree-zoom");
+    if(el) el.style.transform = "scale(" + zoomLevel + ")";
+    var pct = document.getElementById("zoom-pct");
+    if(pct) pct.textContent = Math.round(zoomLevel * 100) + "%";
+    var outBtn = document.getElementById("zoom-out-btn");
+    var inBtn = document.getElementById("zoom-in-btn");
+    if(outBtn) outBtn.disabled = zoomLevel <= ZOOM_MIN + 1e-9;
+    if(inBtn) inBtn.disabled = zoomLevel >= ZOOM_MAX - 1e-9;
+  }
+  function renderZoomControls(){
+    return (
+      '<div class="zoom-controls">' +
+        '<button type="button" id="zoom-out-btn" class="zoom-btn" data-action="zoom-out" aria-label="Zoom out">' + minusSvg() + "</button>" +
+        '<span class="zoom-pct" id="zoom-pct">' + Math.round(zoomLevel * 100) + "%</span>" +
+        '<button type="button" id="zoom-in-btn" class="zoom-btn" data-action="zoom-in" aria-label="Zoom in">' + plusSvg() + "</button>" +
+        '<button type="button" class="btn btn-ghost btn-tiny zoom-reset" data-action="zoom-reset">Reset</button>' +
+      "</div>"
+    );
+  }
+
+  function renderRootNode(){
+    if(!orgData.leadership.length){
+      return (
+        '<div class="org-root">' +
+          '<div class="org-root-label">Leadership</div>' +
+          '<p class="tree-empty" style="margin:0;">No leadership added yet</p>' +
+        "</div>"
+      );
+    }
+    return (
+      '<div class="org-root">' +
+        '<div class="org-root-label">Leadership</div>' +
+        '<div class="leadership-row">' +
+          orgData.leadership.map(function(p){ return renderPersonCard(p, { color:"var(--accent)", roleLabel:p.title }); }).join("") +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderEARow(){
+    if(!orgData.eas || !orgData.eas.length) return "";
+    return (
+      '<div class="ea-row-wrap">' +
+        '<div class="ea-row-label">Executive Assistant' + (orgData.eas.length > 1 ? "s" : "") + "</div>" +
+        '<div class="ea-row">' +
+          orgData.eas.map(function(p){
+            var supportNames = (p.supportsIds || []).map(function(id){
+              var found = orgData.leadership.filter(function(l){ return l.id === id; })[0];
+              return found ? found.name : null;
+            }).filter(Boolean);
+            var card = renderPersonCard(p, { color:"var(--gold)", roleLabel: p.title || "Executive Assistant", supports:supportNames });
+            var supportsHtml = supportNames.length ? '<div class="ea-supports">Supports: ' + escapeHtml(supportNames.join(", ")) + "</div>" : "";
+            return '<div class="ea-card">' + card + supportsHtml + "</div>";
+          }).join("") +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderDeptNode(dept, color, mgrCount, collapsed){
+    var card = renderPersonCard(dept.hod, { color:color, roleLabel: dept.hod.title || "Head of Department", deptName: dept.name });
+    var toggle = mgrCount
+      ? '<button type="button" class="node-toggle" data-node-toggle="' + dept.id + '" style="--card-accent:' + color + '" aria-label="' + (collapsed?"Expand":"Collapse") + " " + escapeHtml(dept.name || "department") + ' team">' +
+          chevronSvg(collapsed) + '<span class="node-count">' + mgrCount + "</span>" +
+        "</button>"
+      : "";
+    return (
+      '<div class="dept-node">' +
+        '<div class="dept-pill" style="background:' + color + '">' + escapeHtml(dept.name || "Untitled department") + "</div>" +
+        card +
+        toggle +
+      "</div>"
+    );
+  }
+
+  function renderManagerNode(dept, m, color, teamCount, collapsed){
+    var card = renderPersonCard(m, { color:color, roleLabel: m.title || "Manager", deptName: dept.name });
+    var toggle = teamCount
+      ? '<button type="button" class="node-toggle node-toggle--sm" data-node-toggle="' + m.id + '" style="--card-accent:' + color + '" aria-label="' + (collapsed?"Expand":"Collapse") + ' team">' +
+          chevronSvg(collapsed) + '<span class="node-count">' + teamCount + "</span>" +
+        "</button>"
+      : "";
+    return '<div class="dept-node--manager">' + card + toggle + "</div>";
+  }
+
+  function renderOrgTree(){
+    var rootHtml = renderRootNode();
+    var eaHtml = renderEARow();
+    var deptsHtml = "";
+    if(orgData.departments.length){
+      deptsHtml = "<ul>" + orgData.departments.map(function(dept){
+        var color = deptColor(dept);
+        var mgrCount = dept.managers.length;
+        var collapsed = !!collapsedNodes[dept.id];
+        var childUl = "";
+        if(mgrCount && !collapsed){
+          childUl = "<ul>" + dept.managers.map(function(m){
+            var teamCount = m.team.length;
+            var mCollapsed = !!collapsedNodes[m.id];
+            var teamUl = "";
+            if(teamCount && !mCollapsed){
+              teamUl = "<ul>" + m.team.map(function(t){
+                return "<li>" + renderPersonCard(t, { color:color, roleLabel: t.title || "Team Member", deptName: dept.name, small:true }) + "</li>";
+              }).join("") + "</ul>";
+            }
+            return "<li>" + renderManagerNode(dept, m, color, teamCount, mCollapsed) + teamUl + "</li>";
+          }).join("") + "</ul>";
+        }
+        return '<li style="--dept-color:' + color + '">' + renderDeptNode(dept, color, mgrCount, collapsed) + childUl + "</li>";
+      }).join("") + "</ul>";
+    }
+    var html = '<div class="tree" style="--dept-color:var(--accent)"><div class="tree-zoom" id="tree-zoom"><ul><li>' + rootHtml + eaHtml + deptsHtml + "</li></ul></div></div>";
+    if(!orgData.departments.length){
+      html += '<p class="tree-empty" style="text-align:center;">No departments yet — switch to Admin to add departments, heads, managers and team members.</p>';
+    }
+    return html;
+  }
+
+  function renderView(){
+    PERSON_INDEX = {};
+    var html =
+      '<section class="section">' +
+        '<div class="section-head-row">' +
+          '<div class="section-title">Org Chart</div>' +
+          renderZoomControls() +
+        "</div>" +
+        renderOrgTree() +
+      "</section>";
+    document.getElementById("app").innerHTML = html;
+    applyZoom();
+  }
+
+  /* ---------------- rendering: modal ---------------- */
+
+  function renderModalColumn(title, items){
+    return (
+      '<div class="modal-col">' +
+        '<div class="modal-col-title">' + escapeHtml(title) + "</div>" +
+        (items.length
+          ? "<ol class=\"modal-list\">" + items.map(function(i){ return "<li>" + escapeHtml(i) + "</li>"; }).join("") + "</ol>"
+          : '<p class="modal-empty">Not set yet</p>') +
+      "</div>"
+    );
+  }
+
+  function renderModal(){
+    var root = document.getElementById("modal-root");
+    if(!openPersonId){ root.innerHTML = ""; return; }
+    var p = PERSON_INDEX[openPersonId];
+    if(!p){ root.innerHTML = ""; openPersonId = null; return; }
+    var modalAvatarInner = p.photoUrl
+      ? '<img class="avatar-img" src="' + p.photoUrl + '" alt="">'
+      : escapeHtml(initials(p.name));
+    var modalAvatarCls = "avatar avatar--lg" + (p.photoUrl ? " avatar--photo" : "");
+    var modalAvatarStyle = p.photoUrl ? "" : "background:" + p.color;
+    root.innerHTML =
+      '<div class="modal-backdrop" data-modal-close>' +
+        '<div class="modal" role="dialog" aria-modal="true" style="--card-accent:' + p.color + '">' +
+          '<button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>' +
+          '<div class="modal-head">' +
+            '<span class="' + modalAvatarCls + '" style="' + modalAvatarStyle + '">' + modalAvatarInner + "</span>" +
+            "<div>" +
+              '<h2 class="modal-name">' + escapeHtml(p.name) + "</h2>" +
+              '<p class="modal-role">' + escapeHtml(p.title) + (p.deptName ? " &middot; " + escapeHtml(p.deptName) : "") + "</p>" +
+              (p.supports && p.supports.length ? '<p class="modal-supports">Supports: ' + escapeHtml(p.supports.join(", ")) + "</p>" : "") +
+            "</div>" +
+          "</div>" +
+          '<div class="modal-grid">' +
+            renderModalColumn("Key Result Areas", p.kras) +
+            renderModalColumn("KPIs", p.kpis) +
+            renderModalColumn("Cadence", p.cadence) +
+          "</div>" +
+        "</div>" +
+      "</div>";
+  }
+
+  function openModal(id){ openPersonId = id; renderModal(); }
+  function closeModal(){ openPersonId = null; renderModal(); }
+
+  /* ---------------- rendering: auth screens ---------------- */
+
+  function renderLogin(){
+    var opts = APP.companies.map(function(c){
+      var sel = (pendingLoginCompanyId && c.id === pendingLoginCompanyId) ? " selected" : "";
+      return '<option value="' + c.id + '"' + sel + '>' + escapeHtml(c.companyName || "Untitled company") + "</option>";
+    }).join("");
+    var html =
+      '<div class="auth-shell">' +
+        '<div class="auth-card">' +
+          '<h2 class="auth-title">Sign in to your org chart</h2>' +
+          '<p class="auth-sub">Pick your company and enter its Settings login.</p>' +
+          (APP.companies.length
+            ? (
+                '<div class="field"><label>Company</label><select id="login-company">' + opts + "</select></div>" +
+                '<div class="field"><label>Email ID</label><input type="email" id="login-email" autocomplete="username"></div>' +
+                '<div class="field"><label>Password</label><input type="password" id="login-password" autocomplete="current-password"></div>' +
+                '<div id="login-error" class="auth-error" hidden></div>' +
+                '<button type="button" class="btn btn-primary" data-action="do-login" style="width:100%;">Log in</button>'
+              )
+            : '<p class="admin-empty">No companies yet.</p>') +
+          '<div class="auth-divider">or</div>' +
+          '<button type="button" class="btn btn-ghost" data-action="go-admin" style="width:100%;">Admin</button>' +
+        "</div>" +
+      "</div>";
+    document.getElementById("app").innerHTML = html;
+    pendingLoginCompanyId = null;
+  }
+
+  function renderManage(){
+    var rows = APP.companies.map(function(c){
+      var sub = [c.adminName, c.email].filter(Boolean).join(" · ");
+      return (
+        '<div class="manage-row">' +
+          '<div class="manage-row-main">' +
+            '<div class="manage-row-name">' + escapeHtml(c.companyName || "Untitled company") + "</div>" +
+            (sub ? '<div class="manage-row-sub">' + escapeHtml(sub) + "</div>" : "") +
+          "</div>" +
+          '<button type="button" class="btn btn-ghost btn-tiny" data-action="go-login-as" data-company="' + c.id + '">Sign in</button>' +
+        "</div>"
+      );
+    }).join("");
+    var html =
+      '<div class="auth-shell">' +
+        '<div class="auth-card" style="max-width:440px;">' +
+          '<h2 class="auth-title">Admin</h2>' +
+          '<p class="auth-sub">Manage companies or create a new one.</p>' +
+          (rows ? '<div class="manage-list">' + rows + "</div>" : '<p class="admin-empty">No companies yet.</p>') +
+          '<div class="auth-divider">create new</div>' +
+          '<div class="field"><label>Company name</label><input type="text" id="manage-company"></div>' +
+          '<div class="field"><label>Admin name</label><input type="text" id="manage-admin-name"></div>' +
+          '<div class="field"><label>Email ID</label><input type="email" id="manage-email" autocomplete="username"></div>' +
+          '<div class="field"><label>Password</label><input type="password" id="manage-password" autocomplete="new-password"></div>' +
+          '<p class="auth-hint">This is a basic access gate to keep companies separate, not secure storage — don’t reuse an important password.</p>' +
+          '<div id="manage-error" class="auth-error" hidden></div>' +
+          '<button type="button" class="btn btn-primary" data-action="do-create-company" style="width:100%;">Create company</button>' +
+          '<button type="button" class="btn btn-ghost" data-action="go-login" style="width:100%;margin-top:8px;">Back to sign in</button>' +
+        "</div>" +
+      "</div>";
+    document.getElementById("app").innerHTML = html;
+  }
+
+  function renderScreen(){
+    if(screen === "login"){ renderLoginTopbar(); renderModal(); renderLogin(); return; }
+    if(screen === "manage"){ renderLoginTopbar(); renderModal(); renderManage(); return; }
+    renderTopbar();
+    renderModal();
+    if(mode === "admin") renderAdmin(); else renderView();
+  }
+
+  function doLogin(){
+    var sel = document.getElementById("login-company");
+    var userEl = document.getElementById("login-email");
+    var passEl = document.getElementById("login-password");
+    var errEl = document.getElementById("login-error");
+    if(!sel || !userEl || !passEl) return;
+    var company = findCompanyById(sel.value);
+    var u = (userEl.value || "").trim(), p = passEl.value || "";
+    if(company && company.email.toLowerCase() === u.toLowerCase() && company.password === p){
+      activeCompanyId = company.id;
+      orgData = company;
+      openPersonId = null;
+      screen = "app";
+      mode = "view";
+      saveActiveCompany(company.id);
+      renderScreen();
+    } else if(errEl){
+      errEl.textContent = "Incorrect email or password for that company.";
+      errEl.hidden = false;
+    }
+  }
+
+  function doCreateCompany(){
+    var nameEl = document.getElementById("manage-company");
+    var adminEl = document.getElementById("manage-admin-name");
+    var emailEl = document.getElementById("manage-email");
+    var passEl = document.getElementById("manage-password");
+    var errEl = document.getElementById("manage-error");
+    var name = (nameEl.value || "").trim();
+    var adminName = (adminEl.value || "").trim();
+    var email = (emailEl.value || "").trim();
+    var pass = passEl.value || "";
+    if(!name || !email || !pass){
+      if(errEl){ errEl.textContent = "Please fill in company name, email ID and password."; errEl.hidden = false; }
+      return;
+    }
+    var clash = APP.companies.some(function(c){ return c.email.toLowerCase() === email.toLowerCase(); });
+    if(clash){
+      if(errEl){ errEl.textContent = "That email ID is already used by another company — pick another."; errEl.hidden = false; }
+      return;
+    }
+    var company = newCompanyRecord(name, adminName, email, pass);
+    APP.companies.push(company);
+    activeCompanyId = company.id;
+    orgData = company;
+    openPersonId = null;
+    screen = "app";
+    mode = "admin";
+    saveActiveCompany(company.id);
+    renderScreen();
+    showBanner("Company created — add your team, then Save & Publish so everyone else can see it.");
+  }
+
+  /* ---------------- rendering: admin ---------------- */
+
+  function renderPersonEditor(path, person, opts){
+    opts = opts || {};
+    var color = opts.color || "var(--accent)";
+    var showKra = !!adminExpandedKra[person.id];
+    var removeBtn = opts.removable
+      ? '<button type="button" class="btn btn-tiny btn-danger" data-action="' + opts.removeAction + '"' + (opts.removeAttrs||"") + ">Remove</button>"
+      : "";
+    var avatarInner = person.photoUrl
+      ? '<img class="avatar-img" src="' + person.photoUrl + '" alt="">'
+      : escapeHtml(initials(person.name));
+    var avatarStyle = person.photoUrl ? "" : "background:" + color;
+    var removePhotoBtn = person.photoUrl
+      ? '<button type="button" class="btn btn-tiny btn-ghost" data-action="remove-photo" data-person="' + person.id + '">Remove photo</button>'
+      : "";
+    var html =
+      '<div class="repeat-row" style="--card-accent:' + color + '">' +
+        '<div class="repeat-row-main">' +
+          '<label class="avatar avatar--sm avatar-upload" style="' + avatarStyle + '" title="Click to set photo">' +
+            avatarInner +
+            '<span class="avatar-upload-badge">' + cameraSvg() + "</span>" +
+            '<input type="file" accept="image/*" data-photo-input="' + person.id + '" hidden>' +
+          "</label>" +
+          '<input type="text" class="rr-name" data-bind="' + path + '.name" value="' + escapeHtml(person.name) + '" placeholder="Full name">' +
+          '<input type="text" class="rr-title" data-bind="' + path + '.title" value="' + escapeHtml(person.title) + '" placeholder="' + escapeHtml(opts.titlePlaceholder || "Title") + '">' +
+          '<button type="button" class="btn btn-tiny btn-ghost" data-action="toggle-kra" data-person="' + person.id + '">' + (showKra ? "Hide KRA/KPI/Cadence" : "KRA / KPI / Cadence") + "</button>" +
+          removePhotoBtn +
+          removeBtn +
+        "</div>";
+    if(showKra){
+      html +=
+        '<div class="rr-kra-grid">' +
+          '<div class="field"><label>Top KRAs <span>max 5, one per line</span></label><textarea rows="4" data-bind="' + path + '.kraText" placeholder="e.g. Own quarterly revenue target">' + escapeHtml(person.kraText) + "</textarea></div>" +
+          '<div class="field"><label>KPIs <span>max 5</span></label><textarea rows="4" data-bind="' + path + '.kpiText" placeholder="e.g. Revenue vs. target %">' + escapeHtml(person.kpiText) + "</textarea></div>" +
+          '<div class="field"><label>Cadence <span>max 5</span></label><textarea rows="4" data-bind="' + path + '.cadenceText" placeholder="e.g. Weekly 1:1">' + escapeHtml(person.cadenceText) + "</textarea></div>" +
+        "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderEAEditor(p, i){
+    var color = "var(--gold)";
+    var base = renderPersonEditor("eas." + i, p, {
+      color:color, titlePlaceholder:"e.g. Executive Assistant", removable:true, removeAction:"remove-ea", removeAttrs:' data-index="' + i + '"'
+    });
+    var supportsHtml = orgData.leadership.length
+      ? '<div class="ea-supports-picker"><span class="ea-supports-picker-label">Supports</span><div class="ea-supports-options">' +
+          orgData.leadership.map(function(l){
+            var checked = (p.supportsIds || []).indexOf(l.id) !== -1 ? " checked" : "";
+            return '<label class="ea-support-chip"><input type="checkbox" data-action="toggle-ea-support" data-ea="' + i + '" data-leader="' + l.id + '"' + checked + "> " + escapeHtml(l.name || "Unnamed") + "</label>";
+          }).join("") +
+        "</div></div>"
+      : '<p class="admin-empty admin-empty--sm" style="margin-left:56px;">Add leadership first to assign support.</p>';
+    return '<div class="ea-editor">' + base + supportsHtml + "</div>";
+  }
+
+  function renderDeptEditor(dept, di){
+    var color = deptColor(dept);
+    var hodHtml = renderPersonEditor("departments." + di + ".hod", dept.hod, { color:color, titlePlaceholder:"e.g. Head of Sales" });
+    var mgrsHtml = dept.managers.length
+      ? dept.managers.map(function(m, mi){
+          var teamHtml = m.team.length
+            ? m.team.map(function(t, ti){
+                return renderPersonEditor("departments." + di + ".managers." + mi + ".team." + ti, t, {
+                  color:color, titlePlaceholder:"e.g. Sales Executive", removable:true, removeAction:"remove-team",
+                  removeAttrs:' data-dept="' + di + '" data-mgr="' + mi + '" data-team="' + ti + '"'
+                });
+              }).join("")
+            : '<p class="admin-empty admin-empty--sm">No team members yet.</p>';
+          return (
+            '<div class="manager-block">' +
+              renderPersonEditor("departments." + di + ".managers." + mi, m, {
+                color:color, titlePlaceholder:"e.g. Sales Manager", removable:true, removeAction:"remove-manager",
+                removeAttrs:' data-dept="' + di + '" data-mgr="' + mi + '"'
+              }) +
+              '<div class="team-block">' +
+                '<div class="dept-editor-label dept-editor-label--sm">Team members' +
+                  '<button type="button" class="btn btn-ghost btn-tiny" data-action="add-team" data-dept="' + di + '" data-mgr="' + mi + '">+ Add team member</button>' +
+                "</div>" +
+                teamHtml +
+              "</div>" +
+            "</div>"
+          );
+        }).join("")
+      : '<p class="admin-empty">No managers yet.</p>';
+
+    return (
+      '<div class="dept-editor" style="--card-accent:' + color + '">' +
+        '<div class="dept-editor-head">' +
+          '<span class="avatar avatar--sm" style="background:' + color + '">' + escapeHtml(initials(dept.name || "Dept")) + "</span>" +
+          '<input type="text" class="rr-name" data-bind="departments.' + di + '.name" value="' + escapeHtml(dept.name) + '" placeholder="Department name">' +
+          '<button type="button" class="btn btn-tiny btn-danger" data-action="remove-dept" data-dept="' + di + '">Remove department</button>' +
+        "</div>" +
+        '<div class="dept-editor-body">' +
+          '<div class="dept-editor-label">Head of department</div>' +
+          hodHtml +
+          '<div class="dept-editor-label">Managers<button type="button" class="btn btn-ghost btn-tiny" data-action="add-manager" data-dept="' + di + '">+ Add manager</button></div>' +
+          mgrsHtml +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderAdmin(){
+    var status = renderAdmin._status || (isReadOnly ? "This page is read-only for you." : "Not published yet in this session.");
+    var html =
+      '<div class="admin-shell">' +
+        '<section class="admin-section">' +
+          '<div class="admin-section-title">Company</div>' +
+          '<div class="field" style="margin-top:14px;"><label>Company name</label>' +
+            '<input type="text" data-bind="companyName" value="' + escapeHtml(orgData.companyName) + '" placeholder="Your company name">' +
+          "</div>" +
+          '<div class="field"><label>Admin name</label>' +
+            '<input type="text" data-bind="adminName" value="' + escapeHtml(orgData.adminName) + '" placeholder="e.g. Priya Shah">' +
+          "</div>" +
+          '<div class="field"><label>Email ID <span>used to sign in</span></label>' +
+            '<input type="email" data-bind="email" value="' + escapeHtml(orgData.email) + '" placeholder="e.g. admin@company.com" autocomplete="username">' +
+          "</div>" +
+          '<div class="field"><label>Password <span>used to sign in — not securely stored</span></label>' +
+            '<input type="text" data-bind="password" value="' + escapeHtml(orgData.password) + '" placeholder="Choose a password" autocomplete="new-password">' +
+          "</div>" +
+          '<div class="field"><label>Company logo</label>' +
+            '<div class="logo-upload-row">' +
+              '<label class="logo-upload">' +
+                (orgData.logoUrl
+                  ? '<img class="logo-preview-img" src="' + orgData.logoUrl + '" alt="Company logo">'
+                  : '<span class="logo-preview-empty">' + logoPlaceholderSvg() + "</span>") +
+                '<span class="logo-upload-label">' + (orgData.logoUrl ? "Change logo" : "Upload logo") + "</span>" +
+                '<input type="file" accept="image/*" data-logo-input hidden>' +
+              "</label>" +
+              (orgData.logoUrl ? '<button type="button" class="btn btn-tiny btn-ghost btn-danger" data-action="remove-logo">Remove logo</button>' : "") +
+            "</div>" +
+          "</div>" +
+        "</section>" +
+        '<section class="admin-section">' +
+          '<div class="admin-section-head"><div class="admin-section-title">Leadership<span class="admin-section-hint">Directors, Founders &amp; Partners</span></div>' +
+            '<button type="button" class="btn btn-ghost" data-action="add-leader">+ Add leader</button>' +
+          "</div>" +
+          (orgData.leadership.length
+            ? orgData.leadership.map(function(p,i){
+                return renderPersonEditor("leadership." + i, p, { color:"var(--accent)", titlePlaceholder:"e.g. Founder & CEO", removable:true, removeAction:"remove-leader", removeAttrs:' data-index="' + i + '"' });
+              }).join("")
+            : '<p class="admin-empty">No leadership added yet.</p>') +
+        "</section>" +
+        '<section class="admin-section">' +
+          '<div class="admin-section-head"><div class="admin-section-title">Executive Assistant<span class="admin-section-hint">Coordinates on behalf of Leadership</span></div>' +
+            '<button type="button" class="btn btn-ghost" data-action="add-ea">+ Add EA</button>' +
+          "</div>" +
+          (orgData.eas && orgData.eas.length
+            ? orgData.eas.map(renderEAEditor).join("")
+            : '<p class="admin-empty">No Executive Assistant added yet.</p>') +
+        "</section>" +
+        '<section class="admin-section">' +
+          '<div class="admin-section-head"><div class="admin-section-title">Departments</div>' +
+            '<button type="button" class="btn btn-ghost" data-action="add-dept">+ Add department</button>' +
+          "</div>" +
+          (orgData.departments.length
+            ? orgData.departments.map(renderDeptEditor).join("")
+            : '<p class="admin-empty">No departments yet — add your first one.</p>') +
+        "</section>" +
+        '<section class="admin-section">' +
+          '<div class="admin-section-title">Danger zone</div>' +
+          '<div class="field" style="margin-top:14px;">' +
+            '<button type="button" class="btn btn-tiny btn-danger" data-action="delete-company">Delete this company</button>' +
+          "</div>" +
+        "</section>" +
+      "</div>" +
+      '<div class="savebar">' +
+        '<span class="save-status" id="save-status">' + escapeHtml(status) + "</span>" +
+        '<button type="button" class="btn btn-primary" data-action="publish"' + (isReadOnly ? " disabled" : "") + ">Save &amp; Publish</button>" +
+      "</div>";
+    document.getElementById("app").innerHTML = html;
+  }
+  function setSaveStatus(text){
+    renderAdmin._status = text;
+    var el = document.getElementById("save-status");
+    if(el) el.textContent = text;
+  }
+
+  /* ---------------- mode / publish ---------------- */
+
+  function setMode(next){
+    if(next === "admin" && isReadOnly) return;
+    mode = next;
+    openPersonId = null;
+    renderModal();
+    renderTopbar();
+    if(mode === "admin") renderAdmin(); else renderView();
+  }
+
+  function buildPublishHtml(){
+    return fetch(location.href, { cache:"no-store" }).then(function(res){
+      if(!res.ok) throw new Error("fetch-failed");
+      return res.text();
+    }).then(function(text){
+      var re = /(<script id="org-chart-data" type="application\/json">)[\s\S]*?(<\/script>)/;
+      if(!re.test(text)) throw new Error("marker-missing");
+      return text.replace(re, function(_, p1, p2){ return p1 + JSON.stringify(APP) + p2; });
+    });
+  }
+
+  function publishNow(){
+    if(isReadOnly){ showBanner("This page is read-only for you."); return; }
+    setSaveStatus("Publishing…");
+    if(!artifactApi){
+      setSaveStatus("Preview only — changes here aren't saved for other viewers.");
+      return;
+    }
+    buildPublishHtml().then(function(html){
+      return artifactApi.publish(html);
+    }).then(function(){
+      setSaveStatus("Published — everyone will see the update.");
+    }).catch(function(err){
+      var code = err && err.code;
+      if(code === "not_writer" || code === "not_granted"){
+        isReadOnly = true;
+        showBanner("This page is read-only for you — ask the owner to share edit access to make changes.", { sticky:true });
+        setMode("view");
+      } else if(code === "conflict"){
+        setSaveStatus("Someone just published a newer version — refreshing…");
+      } else if(code === "too_large"){
+        setSaveStatus("Too large to publish — try smaller or fewer photos.");
+      } else {
+        setSaveStatus("Could not publish. Please try again.");
+      }
+    });
+  }
+
+  /* ---------------- actions ---------------- */
+
+  function handleAction(el){
+    var action = el.getAttribute("data-action");
+    var d = el.dataset;
+    if(action === "add-leader"){ orgData.leadership.push(newPerson()); renderAdmin(); }
+    else if(action === "remove-leader"){
+      var removedLeader = orgData.leadership[+d.index];
+      var removedId = removedLeader ? removedLeader.id : null;
+      orgData.leadership.splice(+d.index,1);
+      if(removedId){
+        (orgData.eas || []).forEach(function(ea){
+          var pos = (ea.supportsIds || []).indexOf(removedId);
+          if(pos !== -1) ea.supportsIds.splice(pos,1);
+        });
+      }
+      renderAdmin();
+    }
+    else if(action === "add-ea"){ orgData.eas = orgData.eas || []; orgData.eas.push(newEA()); renderAdmin(); }
+    else if(action === "remove-ea"){ orgData.eas.splice(+d.index,1); renderAdmin(); }
+    else if(action === "toggle-ea-support"){
+      var ea = orgData.eas[+d.ea];
+      if(ea){
+        ea.supportsIds = ea.supportsIds || [];
+        var idx = ea.supportsIds.indexOf(d.leader);
+        if(el.checked){ if(idx === -1) ea.supportsIds.push(d.leader); }
+        else if(idx !== -1){ ea.supportsIds.splice(idx,1); }
+      }
+      renderAdmin();
+    }
+    else if(action === "add-dept"){ orgData.departments.push(newDept()); renderAdmin(); }
+    else if(action === "remove-dept"){ orgData.departments.splice(+d.dept,1); renderAdmin(); }
+    else if(action === "add-manager"){ orgData.departments[+d.dept].managers.push(newPerson()); renderAdmin(); }
+    else if(action === "remove-manager"){ orgData.departments[+d.dept].managers.splice(+d.mgr,1); renderAdmin(); }
+    else if(action === "add-team"){ orgData.departments[+d.dept].managers[+d.mgr].team.push(newPerson()); renderAdmin(); }
+    else if(action === "remove-team"){ orgData.departments[+d.dept].managers[+d.mgr].team.splice(+d.team,1); renderAdmin(); }
+    else if(action === "toggle-kra"){ var pid = d.person; adminExpandedKra[pid] = !adminExpandedKra[pid]; renderAdmin(); }
+    else if(action === "remove-photo"){ var per = findPersonById(d.person); if(per){ per.photoUrl = ""; } renderAdmin(); }
+    else if(action === "remove-logo"){ orgData.logoUrl = ""; renderAdmin(); renderTopbar(); }
+    else if(action === "zoom-in"){ setZoom(zoomLevel + ZOOM_STEP); }
+    else if(action === "zoom-out"){ setZoom(zoomLevel - ZOOM_STEP); }
+    else if(action === "zoom-reset"){ setZoom(1); }
+    else if(action === "publish"){ publishNow(); }
+    else if(action === "go-admin"){
+      activeCompanyId = null;
+      orgData = null;
+      openPersonId = null;
+      screen = "manage";
+      mode = "view";
+      clearActiveCompany();
+      renderScreen();
+    }
+    else if(action === "go-login-as"){ pendingLoginCompanyId = d.company; screen = "login"; renderScreen(); }
+    else if(action === "go-login"){ screen = "login"; renderScreen(); }
+    else if(action === "do-login"){ doLogin(); }
+    else if(action === "do-create-company"){ doCreateCompany(); }
+    else if(action === "delete-company"){
+      if(!window.confirm("Delete this company and all its org chart data? This cannot be undone.")) return;
+      var removeId = orgData.id;
+      APP.companies = APP.companies.filter(function(c){ return c.id !== removeId; });
+      activeCompanyId = null;
+      orgData = null;
+      openPersonId = null;
+      screen = "login";
+      mode = "view";
+      clearActiveCompany();
+      renderScreen();
+    }
+  }
+
+  /* ---------------- events ---------------- */
+
+  document.addEventListener("click", function(e){
+    var closeEl = e.target.closest("[data-modal-close]");
+    if(closeEl){ closeModal(); return; }
+
+    var bannerClose = e.target.closest("[data-banner-close]");
+    if(bannerClose){ clearBanner(); return; }
+
+    var modeBtn = e.target.closest("[data-mode]");
+    if(modeBtn){ setMode(modeBtn.getAttribute("data-mode")); return; }
+
+    var toggle = e.target.closest("[data-node-toggle]");
+    if(toggle){
+      var id = toggle.getAttribute("data-node-toggle");
+      collapsedNodes[id] = !collapsedNodes[id];
+      renderView();
+      return;
+    }
+
+    var actionEl = e.target.closest("[data-action]");
+    if(actionEl){ handleAction(actionEl); return; }
+
+    var card = e.target.closest("[data-person-id]");
+    if(card && mode === "view"){ openModal(card.getAttribute("data-person-id")); return; }
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && openPersonId){ closeModal(); return; }
+    if(e.key === "Enter" || e.key === " "){
+      var card = e.target.closest && e.target.closest("[data-person-id]");
+      if(card && mode === "view"){ e.preventDefault(); openModal(card.getAttribute("data-person-id")); }
+    }
+  });
+
+  document.addEventListener("input", function(e){
+    var el = e.target.closest("[data-bind]");
+    if(!el) return;
+    setPath(orgData, el.getAttribute("data-bind"), el.value);
+    if(el.getAttribute("data-bind") === "companyName"){ renderTopbar(); }
+    else if(mode === "view"){ renderView(); }
+  });
+
+  document.addEventListener("change", function(e){
+    var photoInput = e.target.closest("[data-photo-input]");
+    if(photoInput && photoInput.files && photoInput.files[0]){
+      var pid = photoInput.getAttribute("data-photo-input");
+      fileToSquareDataUrl(photoInput.files[0], 128, 0.85, function(dataUrl){
+        if(!dataUrl) return;
+        var person = findPersonById(pid);
+        if(person){ person.photoUrl = dataUrl; }
+        renderAdmin();
+      });
+      return;
+    }
+    var logoInput = e.target.closest("[data-logo-input]");
+    if(logoInput && logoInput.files && logoInput.files[0]){
+      fileToFitDataUrl(logoInput.files[0], 360, 140, function(dataUrl){
+        if(!dataUrl) return;
+        orgData.logoUrl = dataUrl;
+        renderAdmin();
+        renderTopbar();
+      });
+    }
+  });
+
+  /* ---------------- init ---------------- */
+
+  function init(){
+    var raw = {};
+    try{ raw = JSON.parse(document.getElementById("org-chart-data").textContent); }catch(e){ raw = {}; }
+    APP = normalizeApp(raw);
+    loadZoom();
+    restoreSession();
+
+    renderScreen();
+
+    try{
+      if(window.claude && typeof window.claude.use === "function"){
+        window.claude.use("artifact").then(function(api){ artifactApi = api; });
+      }
+    }catch(e){ artifactApi = null; }
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
