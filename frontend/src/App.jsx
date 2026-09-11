@@ -238,7 +238,7 @@ export default function App() {
             {screen === 'app' && (
               <div className="mode-toggle">
                 <button className={mode === 'view' ? 'active' : ''} onClick={() => setMode('view')}>View</button>
-                <button className={mode === 'admin' ? 'active' : ''} onClick={() => setMode('admin')}>Settings</button>
+                <button className={mode === 'admin' ? 'active' : ''} onClick={() => setMode('admin')}>Edit</button>
               </div>
             )}
             {userRole === 'superadmin' && screen === 'app' && (
