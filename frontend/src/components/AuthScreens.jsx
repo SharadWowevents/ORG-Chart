@@ -1,7 +1,80 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { uid } from '../utils';
 
-// ... (Keep your LoginScreen and ForcePasswordModal exactly the same) ...
+// ----------------------------------------
+// Standard Login Screen
+// ----------------------------------------
+export const LoginScreen = ({ onLogin, error }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const handleLogin = () => {
+    if (!email || !password) return;
+    onLogin(email, password);
+  };
+
+  return (
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h2 className="auth-title">Sign in</h2>
+        <p className="auth-sub">Enter your email and password to access your workspace.</p>
+        
+        <div className="field">
+          <label>Email ID</label>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
+        </div>
+        <div className="field">
+          <label>Password</label>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+        </div>
+        
+        {error && <div className="auth-error">{error}</div>}
+        
+        <button className="btn btn-primary" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
+      </div>
+    </div>
+  );
+};
+
+// ----------------------------------------
+// Admin Force Password Modal
+// ----------------------------------------
+const ForcePasswordModal = ({ orgName, onClose, onSubmit }) => {
+  const [newPwd, setNewPwd] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    setError("");
+    if (!newPwd) return setError("Password is required.");
+    try {
+      await onSubmit(newPwd);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={(e) => e.target.className === 'modal-backdrop' && onClose()}>
+      <div className="modal" style={{ maxWidth: 400, borderTop: '6px solid var(--danger)' }}>
+        <button className="modal-close" onClick={onClose}>&times;</button>
+        <h2 className="auth-title" style={{ marginBottom: 4 }}>Force Reset Password</h2>
+        <p className="auth-sub" style={{ marginBottom: 16 }}>For organization: <strong>{orgName}</strong></p>
+        
+        <div className="field">
+          <label>New Password</label>
+          <input type="text" value={newPwd} onChange={e => setNewPwd(e.target.value)} />
+        </div>
+        
+        {error && <div className="auth-error">{error}</div>}
+        
+        <button className="btn btn-danger" style={{ width: '100%', marginTop: 8 }} onClick={handleSubmit}>
+          Force Reset
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // ----------------------------------------
 // Super Admin Dashboard
