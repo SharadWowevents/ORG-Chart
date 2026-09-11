@@ -185,7 +185,11 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
 .node-count { min-width: 12px; text-align: center; }
 
 /* ---------- tree ---------- */
-.tree { overflow: auto; padding: 10px 4px 34px; display: flex; justify-content: center; }
+.tree { width: 100%;
+  height: calc(100vh - 220px);
+  overflow: auto; padding: 10px 4px 34px; display: flex; justify-content: center; 
+-ms-overflow-style: none;  
+  scrollbar-width: none;}
 .tree-zoom { transform-origin: top center; transition: transform .2s ease-out; }
 .tree ul { display: flex; padding-top: 30px; position: relative; margin: 0; }
 .tree-zoom > ul { justify-content: center; }
@@ -201,6 +205,9 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
 .tree li:first-child::after { border-radius: 10px 0 0 0; }
 .tree ul ul::before { content: ""; position: absolute; top: 0; left: 50%; width: 0; height: 30px; border-left: 2px solid var(--dept-color); }
 .tree-empty { color: var(--ink-soft); font-size: 13.5px; font-weight: 600; padding: 10px 4px; }
+.tree::-webkit-scrollbar {
+  display: none; 
+}
 
 /* ---------- empty state ---------- */
 .empty-state { text-align: center; padding: 48px 24px; background: var(--surface); border: 1.5px dashed var(--border-strong); border-radius: 20px; color: var(--ink-soft); }
