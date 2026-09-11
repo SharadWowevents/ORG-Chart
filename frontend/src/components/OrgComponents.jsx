@@ -129,10 +129,21 @@ export const Modal = ({ payload, onClose }) => {
   const kpis = linesOf(person.kpiText);
   const cadence = linesOf(person.cadenceText);
 
+  // Calculate the max number of rows needed based on the longest array
+  const maxRows = Math.max(kras.length, kpis.length, cadence.length);
+  
+  // Create a structured array of row objects
+  const tableRows = Array.from({ length: maxRows }, (_, i) => ({
+    kra: kras[i] || "",
+    kpi: kpis[i] || "",
+    cadence: cadence[i] || ""
+  }));
+
   return (
     <div className="modal-backdrop" onClick={(e) => e.target.className === 'modal-backdrop' && onClose()}>
-      <div className="modal" style={{ '--card-accent': color }} role="dialog">
+      <div className="modal" style={{ '--card-accent': color, maxWidth: 800 }} role="dialog">
         <button className="modal-close" onClick={onClose}>&times;</button>
+        
         <div className="modal-head">
           <span className={`avatar avatar--lg ${person.photoUrl ? 'avatar--photo' : ''}`} style={person.photoUrl ? {} : { background: color }}>
             {person.photoUrl ? <img className="avatar-img" src={person.photoUrl} alt="" /> : initials(person.name)}
@@ -143,20 +154,42 @@ export const Modal = ({ payload, onClose }) => {
             {supports?.length > 0 && <p className="modal-supports">Supports: {supports.join(", ")}</p>}
           </div>
         </div>
-        <div className="modal-grid">
-          <div className="modal-col">
-            <div className="modal-col-title">Key Result Areas</div>
-            {kras.length ? <ol className="modal-list">{kras.map((x, i) => <li key={i}>{x}</li>)}</ol> : <p className="modal-empty">Not set yet</p>}
-          </div>
-          <div className="modal-col">
-            <div className="modal-col-title">KPIs</div>
-            {kpis.length ? <ol className="modal-list">{kpis.map((x, i) => <li key={i}>{x}</li>)}</ol> : <p className="modal-empty">Not set yet</p>}
-          </div>
-          <div className="modal-col">
-            <div className="modal-col-title">Cadence</div>
-            {cadence.length ? <ol className="modal-list">{cadence.map((x, i) => <li key={i}>{x}</li>)}</ol> : <p className="modal-empty">Not set yet</p>}
-          </div>
+
+        {/* NEW ALIGNED TABLE VIEW */}
+        <div style={{ overflowX: 'auto', marginTop: '24px' }}>
+          {maxRows > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-strong)' }}>
+                  <th style={{ padding: '0 12px 12px 0', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33%' }}>Key Result Areas</th>
+                  <th style={{ padding: '0 12px 12px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33%' }}>KPIs</th>
+                  <th style={{ padding: '0 0 12px 12px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33%' }}>Cadence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableRows.map((row, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '12px 12px 12px 0', verticalAlign: 'top', fontWeight: 600 }}>
+                      {row.kra ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
+                      {row.kra || <span style={{ opacity: 0.3 }}>-</span>}
+                    </td>
+                    <td style={{ padding: '12px', verticalAlign: 'top', fontWeight: 600 }}>
+                      {row.kpi ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
+                      {row.kpi || <span style={{ opacity: 0.3 }}>-</span>}
+                    </td>
+                    <td style={{ padding: '12px 0 12px 12px', verticalAlign: 'top', fontWeight: 600 }}>
+                      {row.cadence ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
+                      {row.cadence || <span style={{ opacity: 0.3 }}>-</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="modal-empty" style={{ textAlign: 'center', padding: '20px 0' }}>No details set yet.</p>
+          )}
         </div>
+
       </div>
     </div>
   );
