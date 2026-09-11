@@ -280,3 +280,21 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
 }
+
+.wrap.wrap-full {
+  max-width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Give the Title and Zoom controls some breathing room from the monitor edges */
+.wrap-full .section-head-row {
+  padding: 0 40px;
+}
+
+/* Ensure the draggable tree area has no borders and spans edge-to-edge */
+.wrap-full .tree {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+}
