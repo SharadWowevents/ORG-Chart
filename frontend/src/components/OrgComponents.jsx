@@ -19,9 +19,51 @@ export const PersonCard = ({ person, color, roleLabel, deptName, small, onClick 
   );
 };
 
+import React, { useState, useRef } from 'react';
+import { initials, linesOf, deptColor } from '../utils';
+import { ChevronSvg, MinusSvg, PlusSvg } from './Icons';
+
+// ... (Keep PersonCard component exactly the same) ...
+
 export const OrgTree = ({ data, onPersonClick, zoomLevel, setZoomLevel }) => {
   const [collapsed, setCollapsed] = useState({});
   const toggle = (id) => setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
+
+  // ==========================================
+  // DRAG TO PAN LOGIC
+  // ==========================================
+  const containerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
+
+  const handleMouseDown = (e) => {
+    // Ignore drag if the user is clicking a button or a person card
+    if (e.target.closest('button') || e.target.closest('.person-card')) return;
+
+    setIsDragging(true);
+    setStartPos({
+      x: e.pageX - containerRef.current.offsetLeft,
+      y: e.pageY - containerRef.current.offsetTop,
+      scrollLeft: containerRef.current.scrollLeft,
+      scrollTop: containerRef.current.scrollTop
+    });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => setIsDragging(false);
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // Prevents annoying text highlighting while dragging
+
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const y = e.pageY - containerRef.current.offsetTop;
+    const walkX = x - startPos.x;
+    const walkY = y - startPos.y;
+
+    containerRef.current.scrollLeft = startPos.scrollLeft - walkX;
+    containerRef.current.scrollTop = startPos.scrollTop - walkY;
+  };
 
   return (
     <section className="section">
@@ -35,8 +77,21 @@ export const OrgTree = ({ data, onPersonClick, zoomLevel, setZoomLevel }) => {
         </div>
       </div>
 
-      <div className="tree" style={{ '--dept-color': 'var(--accent)' }}>
-        <div className="tree-zoom" style={{ transform: `scale(${zoomLevel})` }}>
+      {/* DRAGGABLE CONTAINER */}
+      <div 
+        className="tree" 
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        style={{ 
+          '--dept-color': 'var(--accent)',
+          cursor: isDragging ? 'grabbing' : 'grab', // The hand cursor magic!
+          userSelect: isDragging ? 'none' : 'auto'  // Prevents text selection
+        }}
+      >
+        <div className="tree-zoom" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}>
           <ul>
             <li>
               <div className="org-root">
