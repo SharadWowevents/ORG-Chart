@@ -267,7 +267,7 @@ export default function App() {
   return (
     <>
       {screen !== 'login' && <Topbar />}
-      <main className="wrap">
+      <main className={`wrap ${mode === 'view' && screen === 'app' ? 'wrap-full' : ''}`}>
         {screen === 'login' && <LoginScreen onLogin={handleLogin} error={loginError} />}
         {screen === 'dashboard' && userRole === 'superadmin' && (
           <SuperAdminDashboard

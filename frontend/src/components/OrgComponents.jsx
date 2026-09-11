@@ -194,7 +194,7 @@ export const Modal = ({ payload, onClose }) => {
 
   return (
     <div className="modal-backdrop" onClick={(e) => e.target.className === 'modal-backdrop' && onClose()}>
-      <div className="modal" style={{ '--card-accent': color, maxWidth: 800 }} role="dialog">
+      <div className="modal" style={{ '--card-accent': color, maxWidth: 850 }} role="dialog">
         <button className="modal-close" onClick={onClose}>&times;</button>
         
         <div className="modal-head">
@@ -213,33 +213,38 @@ export const Modal = ({ payload, onClose }) => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-strong)' }}>
-                  {/* Added borderRight and adjusted padding for column 1 */}
-                  <th style={{ padding: '0 16px 12px 0', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33.3%', borderRight: '1px solid var(--border)' }}>Key Result Areas</th>
-                  {/* Added borderRight and adjusted padding for column 2 */}
-                  <th style={{ padding: '0 16px 12px 16px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33.3%', borderRight: '1px solid var(--border)' }}>KPIs</th>
-                  {/* Adjusted padding for column 3 (no right border needed here) */}
-                  <th style={{ padding: '0 0 12px 16px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '33.3%' }}>Cadence</th>
+                  {/* NEW: Sr. No. Column Header */}
+                  <th style={{ padding: '0 12px 12px 4px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '8%', borderRight: '1px solid var(--border)' }}>Sr. No.</th>
+                  
+                  {/* Adjusted padding for KRA since it's no longer the first column */}
+                  <th style={{ padding: '0 16px 12px 16px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '30.6%', borderRight: '1px solid var(--border)' }}>Key Result Areas</th>
+                  
+                  <th style={{ padding: '0 16px 12px 16px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '30.6%', borderRight: '1px solid var(--border)' }}>KPIs</th>
+                  
+                  <th style={{ padding: '0 0 12px 16px', color: 'var(--card-accent)', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '.1em', width: '30.6%' }}>Cadence</th>
                 </tr>
               </thead>
               <tbody>
                 {tableRows.map((row, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                     
-                    {/* KRA Column */}
-                    <td style={{ padding: '12px 16px 12px 0', verticalAlign: 'top', fontWeight: 600, borderRight: '1px solid var(--border)' }}>
-                      {row.kra ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
+                    {/* NEW: Sr. No. Cell */}
+                    <td style={{ padding: '12px 12px 12px 4px', verticalAlign: 'top', fontWeight: 700, color: 'var(--ink-soft)', borderRight: '1px solid var(--border)' }}>
+                      {i + 1}.
+                    </td>
+                    
+                    {/* KRA Column (Removed the numbers) */}
+                    <td style={{ padding: '12px 16px', verticalAlign: 'top', fontWeight: 600, borderRight: '1px solid var(--border)' }}>
                       {row.kra || <span style={{ opacity: 0.3 }}>-</span>}
                     </td>
 
-                    {/* KPI Column */}
+                    {/* KPI Column (Removed the numbers) */}
                     <td style={{ padding: '12px 16px', verticalAlign: 'top', fontWeight: 600, borderRight: '1px solid var(--border)' }}>
-                      {row.kpi ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
                       {row.kpi || <span style={{ opacity: 0.3 }}>-</span>}
                     </td>
 
-                    {/* Cadence Column */}
+                    {/* Cadence Column (Removed the numbers) */}
                     <td style={{ padding: '12px 0 12px 16px', verticalAlign: 'top', fontWeight: 600 }}>
-                      {row.cadence ? <span style={{ color: 'var(--ink-soft)', marginRight: '4px' }}>{i + 1}.</span> : ''}
                       {row.cadence || <span style={{ opacity: 0.3 }}>-</span>}
                     </td>
 

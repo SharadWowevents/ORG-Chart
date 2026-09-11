@@ -368,7 +368,7 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
           onClick={onViewChart}
           style={{ padding: '12px 40px', fontSize: '15px', borderRadius: '30px', boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)' }}
         >
-          View Org Chart →
+         Save and View →
         </button>
       </section>
 
