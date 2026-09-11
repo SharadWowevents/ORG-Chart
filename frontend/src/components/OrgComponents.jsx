@@ -20,7 +20,6 @@ export const PersonCard = ({ person, color, roleLabel, deptName, small, onClick 
 };
 
 import { useRef } from 'react';
-import { ChevronSvg, MinusSvg, PlusSvg } from './Icons';
 
 // ... (Keep PersonCard component exactly the same) ...
 
