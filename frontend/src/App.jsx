@@ -268,11 +268,7 @@ export default function App() {
                 <button 
                   className="btn btn-ghost" 
                   style={{ display: 'flex', gap: '6px', alignItems: 'center', color: 'var(--accent)' }}
-                  onClick={() => {
-                    const shareUrl = `${window.location.origin}/?share=${activeCompany.id}`;
-                    navigator.clipboard.writeText(shareUrl);
-                    alert("Share link copied to clipboard!\n\nAnyone with this link can view this Org Chart.");
-                  }}
+                  onClick={() => setShowShareModal(true)}
                 >
                   🔗 Share
                 </button>
@@ -352,7 +348,17 @@ export default function App() {
           onSubmit={handleChangePassword}
         />
       )}
+      
+      {/* GLOBAL ORG CHART DETAILS MODAL */}
       <Modal payload={modalPayload} onClose={() => setModalPayload(null)} />
+      
+      {/* NEW: CUSTOM SHARE MODAL */}
+      {showShareModal && (
+        <ShareModal 
+          shareUrl={`${window.location.origin}/?share=${activeCompany?.id}`} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </>
   );
 }
