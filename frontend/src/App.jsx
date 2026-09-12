@@ -13,6 +13,7 @@ export default function App() {
   const [companies, setCompanies] = useState([]);
   const [activeCompany, setActiveCompany] = useState(null);
   const [showSuperAdminPwdModal, setShowSuperAdminPwdModal] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   const [screen, setScreen] = useState('loading');
   const [mode, setMode] = useState('view');
@@ -38,6 +39,29 @@ export default function App() {
     }
     return response;
   };
+
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareId = params.get('share');
+    
+    if (shareId) {
+      // Fetch public data
+      fetch(`/api/shared/${shareId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.companyName) {
+            setActiveCompany(data);
+            setScreen('app');
+            setMode('view');
+            setIsGuest(true); // Locks out admin controls
+          } else {
+            alert("This shared link is invalid or has expired.");
+          }
+        })
+        .catch(err => console.error("Error loading shared chart:", err));
+    }
+  }, []);
 
   // ==========================================
   // SESSION PERSISTENCE (Runs on Page Load)
@@ -235,29 +259,55 @@ export default function App() {
           </div>
 
           <div className="mode-controls">
-            {screen === 'app' && (
-              <div className="mode-toggle">
-                <button className={mode === 'view' ? 'active' : ''} onClick={() => setMode('view')}>View</button>
-                <button className={mode === 'admin' ? 'active' : ''} onClick={() => setMode('admin')}>Edit</button>
-              </div>
+            
+            {/* 1. SHARE BUTTON & VIEW/SETTINGS TOGGLE (Only for Admins) */}
+            {screen === 'app' && !isGuest && (
+              <>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ display: 'flex', gap: '6px', alignItems: 'center', color: 'var(--accent)' }}
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}/?share=${activeCompany.id}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    alert("Share link copied to clipboard!\n\nAnyone with this link can view this Org Chart.");
+                  }}
+                >
+                  🔗 Share
+                </button>
+                <div className="mode-toggle">
+                  <button className={mode === 'view' ? 'active' : ''} onClick={() => setMode('view')}>View</button>
+                  <button className={mode === 'admin' ? 'active' : ''} onClick={() => setMode('admin')}>Settings</button>
+                </div>
+              </>
             )}
-            {userRole === 'superadmin' && screen === 'app' && (
+            
+            {/* 2. ADMIN ONLY CONTROLS */}
+            {!isGuest && userRole === 'superadmin' && screen === 'app' && (
               <button className="btn btn-ghost btn-tiny" onClick={() => { setActiveCompany(null); setScreen('dashboard'); }}>
                 ← Back to Dashboard
               </button>
             )}
 
-            {/* SUPER ADMIN TOPBAR CONTROLS */}
-            {userRole === 'superadmin' && screen === 'dashboard' && (
+            {!isGuest && userRole === 'superadmin' && screen === 'dashboard' && (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn btn-ghost btn-tiny" onClick={() => setShowSuperAdminPwdModal(true)}>Change Password</button>
                 <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
               </div>
             )}
 
-            {userRole === 'user' && (
-              <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
+            {!isGuest && userRole === 'user' && (
+               <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
             )}
+
+            {/* 3. GUEST ONLY CONTROLS (If they want to log in as admin) */}
+            {isGuest && (
+               <button className="btn btn-ghost btn-tiny" onClick={() => {
+                 window.location.href = '/'; // Refreshes page without the ?share= query
+               }}>
+                 Admin Login
+               </button>
+            )}
+
           </div>
         </div>
       </header>

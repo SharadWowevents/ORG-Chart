@@ -219,6 +219,30 @@ app.delete('/api/companies/:id', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
+// API ROUTES: Public Share 
+// ==========================================
+app.get('/api/shared/:id', async (req, res) => {
+  try {
+    // Find company by custom ID
+    const company = await Company.findOne({ id: req.params.id });
+    if (!company) {
+      return res.status(404).json({ message: 'Organization not found.' });
+    }
+    
+    // Convert to plain object and remove sensitive data before sending
+    const safeCompany = company.toObject();
+    delete safeCompany.password;
+    delete safeCompany.email;
+    delete safeCompany._id; // Remove internal Mongo ID just to be clean
+
+    res.json(safeCompany);
+  } catch (error) {
+    console.error("Share Route Error:", error);
+    res.status(500).json({ message: 'Failed to fetch shared organization.' });
+  }
+});
+
+// ==========================================
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB');
