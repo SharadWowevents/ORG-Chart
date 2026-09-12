@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LoginScreen, SuperAdminDashboard } from './AuthScreens';
-import { Admin } from './Admin';
-import { OrgTree, Modal } from './OrgComponents';
-import { ChangePasswordModal } from './ChangePasswordModal';
+import { LoginScreen, SuperAdminDashboard } from './components/AuthScreens';
+import { Admin } from './components/Admin';
+import { OrgTree, Modal } from './components/OrgComponents';
+import { ChangePasswordModal } from './components/ChangePasswordModal';
 
 // ==========================================
 // CUSTOM SHARE MODAL
