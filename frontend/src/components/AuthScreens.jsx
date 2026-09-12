@@ -30,7 +30,7 @@ export const LoginScreen = ({ onLogin, error }) => {
         
         {error && <div className="auth-error">{error}</div>}
         
-        <button className="btn btn-primary" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
+        <button className="btn-view-chart" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
       </div>
     </div>
   );
