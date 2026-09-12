@@ -243,6 +243,29 @@ app.get('/api/shared/:id', async (req, res) => {
 });
 
 // ==========================================
+// API ROUTES: Fetch Logged-in Admin's Company
+// ==========================================
+app.get('/api/my-company', authenticateToken, async (req, res) => {
+  try {
+    // Look up the company using the email stored in the authenticated user's JWT token
+    const company = await Company.findOne({ email: req.user.email });
+    
+    if (!company) {
+      return res.status(404).json({ message: 'Organization not found.' });
+    }
+
+    // Remove the password before sending the data to the frontend
+    const safeCompany = company.toObject();
+    delete safeCompany.password;
+
+    res.json(safeCompany);
+  } catch (error) {
+    console.error("Error fetching my-company:", error);
+    res.status(500).json({ message: 'Failed to fetch organization data.' });
+  }
+});
+
+// ==========================================
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB');
