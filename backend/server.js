@@ -247,8 +247,8 @@ app.get('/api/shared/:id', async (req, res) => {
 // ==========================================
 app.get('/api/my-company', authenticateToken, async (req, res) => {
   try {
-    // Look up the company using the email stored in the authenticated user's JWT token
-    const company = await Company.findOne({ email: req.user.email });
+    // FIX: Look up the company using the 'companyId' stored in the JWT payload!
+    const company = await Company.findOne({ id: req.user.companyId });
     
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
