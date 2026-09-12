@@ -48,28 +48,54 @@ export default function App() {
     const shareId = params.get('share');
     
     if (shareId) {
+      // Fetch public data
       fetch(`/api/shared/${shareId}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Link invalid");
-          return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
           if (data.companyName) {
             setActiveCompany(data);
             setScreen('app');
             setMode('view');
-            setIsGuest(true);
-            setIsLoadingLink(false); // Stop loading!
+            setIsGuest(true); // Locks out admin controls
+          } else {
+            alert("This shared link is invalid or has expired.");
           }
         })
-        .catch(err => {
-          console.error("Error loading shared chart:", err);
-          alert("This shared link is invalid or has expired.");
-          window.location.href = '/'; // Clear the bad URL and restart
-        });
+        .catch(err => console.error("Error loading shared chart:", err));
     }
-    // (Keep whatever previous token validation logic you had here as well)
   }, []);
+
+  // ==========================================
+  // SESSION PERSISTENCE (Runs on Page Load)
+  // ==========================================
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setScreen('login');
+        return;
+      }
+
+      try {
+        const res = await fetchWithAuth('/verify');
+        const data = await res.json();
+
+        setUserRole(data.role);
+
+        if (data.role === 'superadmin') {
+          const compsRes = await fetchWithAuth('/companies');
+          setCompanies(await compsRes.json());
+          setScreen('dashboard');
+        } else if (data.role === 'user') {
+          await handleViewCompany(data.companyId);
+        }
+      } catch (err) {
+        handleLogout();
+      }
+    };
+    verifySession();
+  }, []);
+
   // ==========================================
   // API CALLS
   // ==========================================
