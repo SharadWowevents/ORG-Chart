@@ -298,3 +298,28 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
   border-right: none;
   border-radius: 0;
 }
+
+/* =========================================
+   SAVE AND VIEW BUTTON (Hover Fix)
+   ========================================= */
+.btn-view-chart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 30px;
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid var(--accent);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-view-chart:hover {
+  background: transparent;
+  color: var(--accent); /* Changes text to purple on hover! */
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
