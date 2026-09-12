@@ -363,12 +363,8 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
 
       {/* NEW: View Chart Action Section */}
       <section style={{ textAlign: 'center', padding: '20px 0 10px 0' }}>
-        <button 
-          className="btn btn-primary" 
-          onClick={onViewChart}
-          style={{ padding: '12px 40px', fontSize: '15px', borderRadius: '30px', boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)' }}
-        >
-         Save and View →
+        <button className="btn-view-chart" onClick={onViewChart}>
+          Save and View →
         </button>
       </section>
 
