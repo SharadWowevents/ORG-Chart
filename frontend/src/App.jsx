@@ -302,13 +302,13 @@ export default function App() {
             )}
 
             {/* 3. GUEST ONLY CONTROLS (If they want to log in as admin) */}
-            {isGuest && (
+            {/* {isGuest && (
                <button className="btn btn-ghost btn-tiny" onClick={() => {
                  window.location.href = '/'; // Refreshes page without the ?share= query
                }}>
                  Admin Login
                </button>
-            )}
+            )} */}
 
           </div>
         </div>
