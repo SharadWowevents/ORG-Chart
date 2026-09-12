@@ -400,7 +400,7 @@ const ShareModal = ({ shareUrl, onClose }) => {
             }} 
           />
           <button 
-            className="btn btn-primary" 
+            className="btn-view-chart"
             onClick={handleCopy}
             style={{ padding: '0 20px', borderRadius: '8px', minWidth: '100px' }}
           >
