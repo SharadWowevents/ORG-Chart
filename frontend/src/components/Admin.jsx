@@ -184,14 +184,14 @@ export const Admin = ({ company, updateCompany, onDeleteCompany, onChangePasswor
       {expandedKra[person.id] && (
         <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px' }}>
-             <button 
+             {/* <button 
                 className="btn btn-tiny" 
                 style={{ background: 'var(--surface-2)', color: 'var(--accent)', border: '1px solid var(--accent)' }}
                 onClick={() => handleAutoSuggest(person.id, path, person.title)}
                 disabled={isGenerating[person.id]}
              >
                 {isGenerating[person.id] ? "Generating..." : "✨ Auto-Fill with AI"}
-             </button>
+             </button> */}
           </div>
 
           <div className="rr-kra-grid" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }}>

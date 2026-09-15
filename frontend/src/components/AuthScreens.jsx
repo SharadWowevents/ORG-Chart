@@ -87,6 +87,9 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
   const [password, setPassword] = useState("");
   const [createError, setCreateError] = useState("");
   
+  // NEW: CSV Import State
+  const [isImporting, setIsImporting] = useState(false);
+  
   // Table Controls State
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -113,6 +116,81 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
       createdAt: new Date().toISOString() // Ensure we track creation time
     });
     setName(""); setAdminName(""); setEmail(""); setPassword(""); setCreateError("");
+  };
+
+  // ==========================================
+  // CSV IMPORT & TEMPLATE LOGIC
+  // ==========================================
+  const handleDownloadTemplate = () => {
+    // 1. Define the exact headers needed
+    const headers = "Company Name,Primary Admin,Login Email,Initial Password\n";
+    // 2. Add an example row so the user knows what to do
+    const example = "Acme Corp,John Doe,admin@acme.com,SecurePass123\n";
+    
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + example);
+    const link = document.createElement("a");
+    link.setAttribute("href", csvContent);
+    link.setAttribute("download", "OrgChart_Import_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleImportCSV = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (event) => {
+      const text = event.target.result;
+      const rows = text.split('\n');
+      
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Loop starts at index 1 to skip the header row
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i].trim();
+        if (!row) continue; // Skip empty rows
+
+        // Split by comma and remove any quotes Excel might have added
+        const columns = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
+        const [compName, admName, loginEmail, initPassword] = columns;
+
+        // Validation: Missing critical fields
+        if (!compName || !loginEmail || !initPassword) {
+          errorCount++;
+          continue;
+        }
+
+        // Validation: Email already exists in the current system state
+        if (companies.some(c => c?.email?.toLowerCase() === loginEmail.toLowerCase())) {
+          errorCount++;
+          continue;
+        }
+
+        // Provision the workspace sequentially
+        await onCreateCompany({
+          id: uid(),
+          companyName: compName,
+          adminName: admName || "",
+          email: loginEmail,
+          password: initPassword,
+          logoUrl: "", leadership: [], eas: [], departments: [],
+          createdAt: new Date().toISOString()
+        });
+        
+        successCount++;
+      }
+
+      setIsImporting(false);
+      e.target.value = null; // Reset the hidden file input
+      alert(`Import Complete!\n\n✅ Successfully provisioned: ${successCount}\n❌ Skipped (missing data or duplicates): ${errorCount}`);
+    };
+    
+    reader.readAsText(file);
   };
 
   const handleSort = (key) => {
@@ -187,7 +265,7 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
     ]);
     
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const encodedUri = encodeURIComponent(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `Orgs_Export_${new Date().toISOString().split('T')[0]}.csv`);
@@ -212,7 +290,6 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
           <div className="admin-section-title">Create New Organization</div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {/* Note: Ensure setShowPwdModal is passed down or managed here if you want Admin to change their own password from Dashboard */}
-            {/* <button className="btn btn-danger btn-tiny btn-ghost" onClick={onLogout}>Sign Out</button> */}
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
@@ -222,7 +299,25 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
           <div className="field" style={{ marginBottom: 0 }}><label>Initial Password</label><input type="text" value={password} onChange={e => setPassword(e.target.value)} /></div>
         </div>
         {createError && <div className="auth-error">{createError}</div>}
-        <button className="btn btn-primary" onClick={handleCreate}>Provision Workspace</button>
+        
+        {/* NEW: ACTION BUTTONS ROW */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '20px' }}>
+          <button className="btn btn-primary" onClick={handleCreate} disabled={isImporting}>
+            Provision Workspace
+          </button>
+          
+          <div style={{ width: '1px', height: '24px', background: 'var(--border-strong)', margin: '0 8px' }}></div>
+          
+          <button className="btn btn-ghost" onClick={handleDownloadTemplate} disabled={isImporting}>
+            📄 Download Blank Template
+          </button>
+          
+          <label className="btn btn-ghost" style={{ cursor: 'pointer', margin: 0, opacity: isImporting ? 0.5 : 1 }}>
+            {isImporting ? "⏳ Importing Data..." : "⬆️ Import CSV"}
+            <input type="file" accept=".csv" onChange={handleImportCSV} hidden disabled={isImporting} />
+          </label>
+        </div>
+
       </section>
 
       {/* BOTTOM SECTION: Registered Organizations Table */}

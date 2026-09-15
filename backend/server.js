@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { OpenAI } = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// const { OpenAI } = require('openai');
+// const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Company = require('./models/Company');
 const SuperAdmin = require('./models/Superadmin');
@@ -33,40 +33,40 @@ const authenticateToken = (req, res, next) => {
 // ==========================================
 // API ROUTES: AI Generation
 // ==========================================
-app.post('/api/generate-kpi', authenticateToken, async (req, res) => {
-  const { companyName, role } = req.body;
+// app.post('/api/generate-kpi', authenticateToken, async (req, res) => {
+//   const { companyName, role } = req.body;
   
-  if (!role) {
-    return res.status(400).json({ message: "A Title/Designation is required for AI suggestions." });
-  }
+//   if (!role) {
+//     return res.status(400).json({ message: "A Title/Designation is required for AI suggestions." });
+//   }
 
-  // Instruct GPT-4o to return exactly the JSON format we need
-  const prompt = `You are an expert HR consultant. Based on the following details, suggest appropriate Key Result Areas (KRAs), Key Performance Indicators (KPIs), and a meeting Cadence for this role. Keep points concise (max 1 sentence each).
+//   // Instruct GPT-4o to return exactly the JSON format we need
+//   const prompt = `You are an expert HR consultant. Based on the following details, suggest appropriate Key Result Areas (KRAs), Key Performance Indicators (KPIs), and a meeting Cadence for this role. Keep points concise (max 1 sentence each).
   
-  Organization Context: ${companyName || 'A general business'}
-  Role/Designation: ${role}
+//   Organization Context: ${companyName || 'A general business'}
+//   Role/Designation: ${role}
   
-  Return ONLY a valid JSON object in this exact format, with 3-5 string points per array:
-  {
-    "kras": ["Point 1", "Point 2",...],
-    "kpis": ["Point 1", "Point 2",....],
-    "cadence": ["Point 1", "Point 2",...]
-  }`;
+//   Return ONLY a valid JSON object in this exact format, with 3-5 string points per array:
+//   {
+//     "kras": ["Point 1", "Point 2",...],
+//     "kpis": ["Point 1", "Point 2",....],
+//     "cadence": ["Point 1", "Point 2",...]
+//   }`;
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" } // Forces strict JSON response
-    });
+//   try {
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o",
+//       messages: [{ role: "user", content: prompt }],
+//       response_format: { type: "json_object" } // Forces strict JSON response
+//     });
     
-    const data = JSON.parse(completion.choices[0].message.content);
-    res.json(data);
-  } catch (error) {
-    console.error("OpenAI Error:", error);
-    res.status(500).json({ message: "Failed to connect to OpenAI API." });
-  }
-});
+//     const data = JSON.parse(completion.choices[0].message.content);
+//     res.json(data);
+//   } catch (error) {
+//     console.error("OpenAI Error:", error);
+//     res.status(500).json({ message: "Failed to connect to OpenAI API." });
+//   }
+// });
 
 // ==========================================
 // API ROUTES: Auth
@@ -247,8 +247,8 @@ app.get('/api/shared/:id', async (req, res) => {
 // ==========================================
 app.get('/api/my-company', authenticateToken, async (req, res) => {
   try {
-    // FIX: Look up the company using the 'companyId' stored in the JWT payload!
-    const company = await Company.findOne({ id: req.user.companyId });
+    // Look up the company using the email stored in the authenticated user's JWT token
+    const company = await Company.findOne({ email: req.user.email });
     
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
