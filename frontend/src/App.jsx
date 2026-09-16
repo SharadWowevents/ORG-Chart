@@ -7,7 +7,7 @@ import { OrgTree, Modal } from './components/OrgComponents';
 import { Admin } from './components/Admin';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 
-const API_URL = 'http://localhost:5007/api';
+const API_URL = '/api';
 
 export default function App() {
   const [companies, setCompanies] = useState([]);
@@ -49,7 +49,7 @@ export default function App() {
     
     if (shareId) {
       // Fetch public data
-      fetch(`http://localhost:5007/api/shared/${shareId}`)
+      fetch(`${API_URL}/shared/${shareId}`)
         .then(res => res.json())
         .then(data => {
           if (data.companyName) {
@@ -117,7 +117,7 @@ export default function App() {
   const handleLogin = async (email, password) => {
     setLoginError("");
     try {
-      const res = await fetch(`http://localhost:5007/api/login`, {
+      const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
