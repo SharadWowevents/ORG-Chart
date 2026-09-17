@@ -297,15 +297,6 @@ export default function App() {
                <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
             )}
 
-            {/* 3. GUEST ONLY CONTROLS (If they want to log in as admin) */}
-            {/* {isGuest && (
-               <button className="btn btn-ghost btn-tiny" onClick={() => {
-                 window.location.href = '/'; // Refreshes page without the ?share= query
-               }}>
-                 Admin Login
-               </button>
-            )} */}
-
           </div>
         </div>
       </header>
@@ -313,7 +304,7 @@ export default function App() {
   };
 
   return (
-    <>
+    <div className="app-container">
       {screen !== 'login' && <Topbar />}
       <main className={`wrap ${mode === 'view' && screen === 'app' ? 'wrap-full' : ''}`}>
         {screen === 'login' && <LoginScreen onLogin={handleLogin} error={loginError} />}
@@ -359,7 +350,7 @@ export default function App() {
           onClose={() => setShowShareModal(false)} 
         />
       )}
-    </>
+    </div>
   );
 }
 
