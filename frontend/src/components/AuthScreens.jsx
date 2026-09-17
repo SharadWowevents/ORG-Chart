@@ -15,22 +15,41 @@ export const LoginScreen = ({ onLogin, error }) => {
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h2 className="auth-title">Sign in</h2>
-        <p className="auth-sub">Enter your email and password to access your workspace.</p>
+      
+      {/* Wrapper to center both the external logo and the white box */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '380px' }}>
         
-        <div className="field">
-          <label>Email ID</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
+        {/* BRANDING: Placed outside and above the box */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
+          <img 
+            src="/logo.png" 
+            alt="Workspace Logo" 
+            style={{ width: '76px', height: '76px', objectFit: 'contain', marginBottom: '16px' }} 
+          />
+          <div style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink)' }}>
+            ORG Chart Workspace
+          </div>
         </div>
-        <div className="field">
-          <label>Password</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+
+        {/* THE WHITE LOGIN CARD */}
+        <div className="auth-card" style={{ width: '100%' }}>
+          <h2 className="auth-title">Sign in</h2>
+          <p className="auth-sub">Enter your email and password to access your workspace.</p>
+          
+          <div className="field">
+            <label>Email ID</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+          </div>
+          
+          {error && <div className="auth-error">{error}</div>}
+          
+          <button className="btn-view-chart" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
         </div>
-        
-        {error && <div className="auth-error">{error}</div>}
-        
-        <button className="btn-view-chart" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
+
       </div>
     </div>
   );
