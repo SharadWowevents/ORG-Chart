@@ -302,7 +302,7 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
         
         {/* NEW: ACTION BUTTONS ROW */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '20px' }}>
-          <button className="btn btn-primary" onClick={handleCreate} disabled={isImporting}>
+          <button className="btn-view-chart" onClick={handleCreate} disabled={isImporting}>
             Provision Workspace
           </button>
           
@@ -364,7 +364,7 @@ export const SuperAdminDashboard = ({ companies, onCreateCompany, onDeleteCompan
           </div>
 
           {/* Export Button */}
-          <button className="btn btn-primary" onClick={handleDownloadCSV} style={{ padding: '9px 16px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button className="btn-view-chart" onClick={handleDownloadCSV} style={{ padding: '9px 16px', display: 'flex', gap: '6px', alignItems: 'center' }}>
             <span>↓</span> Export CSV
           </button>
         </div>
