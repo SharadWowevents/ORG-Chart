@@ -13,7 +13,7 @@ const SuperAdmin = require('./models/Superadmin');
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); 
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ==========================================
@@ -42,6 +42,7 @@ const sendWelcomeEmail = async (toEmail, companyName, plainTextPassword) => {
           <p>An administrative workspace has been successfully provisioned for <strong>${companyName}</strong>.</p>
           <p>You can access your organization's dashboard using the credentials below:</p>
           <div style="background: #F1EDFB; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Dashboard URL:</strong> ${`https://orgchart.wowosapps.com`}</p>
             <p style="margin: 5px 0;"><strong>Login Email:</strong> ${toEmail}</p>
             <p style="margin: 5px 0;"><strong>Initial Password:</strong> ${plainTextPassword}</p>
           </div>
@@ -64,13 +65,13 @@ const sendWelcomeEmail = async (toEmail, companyName, plainTextPassword) => {
 // ==========================================
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; 
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: 'Invalid or expired token.' });
-    req.user = user; 
+    req.user = user;
     next();
   });
 };
@@ -106,11 +107,11 @@ app.post('/api/login', async (req, res) => {
 
 app.put('/api/companies/:id/force-password', authenticateToken, async (req, res) => {
   if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
-  
+
   try {
     const company = await Company.findOne({ id: req.params.id });
     if (!company) return res.status(404).json({ message: "Company not found." });
-    
+
     company.password = req.body.newPassword;
     await company.save();
     res.json({ message: "Password updated successfully." });
@@ -137,7 +138,7 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
       admin.password = newPassword;
       await admin.save();
       return res.json({ message: "Password updated successfully." });
-      
+
     } else if (req.user.role === 'user') {
       const company = await Company.findOne({ id: req.user.companyId });
       if (!company || company.password !== currentPassword) {
@@ -158,7 +159,7 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
 
 app.get('/api/companies', authenticateToken, async (req, res) => {
   if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
-  
+
   try {
     const companies = await Company.find().select('-password');
     res.json(companies);
@@ -176,7 +177,7 @@ app.post('/api/companies', authenticateToken, async (req, res) => {
     if (existing) return res.status(400).json({ message: 'Email already in use.' });
 
     const savedCompany = await new Company(req.body).save();
-    
+
     // NEW: Fire off the welcome email immediately after saving to DB!
     // We don't await this so it doesn't slow down the frontend response time.
     sendWelcomeEmail(req.body.email, req.body.companyName, req.body.password);
@@ -232,11 +233,11 @@ app.get('/api/shared/:id', async (req, res) => {
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
-    
+
     const safeCompany = company.toObject();
     delete safeCompany.password;
     delete safeCompany.email;
-    delete safeCompany._id; 
+    delete safeCompany._id;
 
     res.json(safeCompany);
   } catch (error) {
@@ -252,7 +253,7 @@ app.get('/api/my-company', authenticateToken, async (req, res) => {
   try {
     // FIX RE-APPLIED: Look up by companyId instead of email
     const company = await Company.findOne({ id: req.user.companyId });
-    
+
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
@@ -271,7 +272,7 @@ app.get('/api/my-company', authenticateToken, async (req, res) => {
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB');
-    
+
     const adminCount = await SuperAdmin.countDocuments();
     if (adminCount === 0) {
       await SuperAdmin.create({
