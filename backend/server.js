@@ -2,7 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer'); // NEW: Imported nodemailer
 require('dotenv').config();
+
 // const { OpenAI } = require('openai');
 // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -15,58 +17,64 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ==========================================
+// NEW: EMAIL TRANSPORTER SETUP
+// ==========================================
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT || 465,
+  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+const sendWelcomeEmail = async (toEmail, companyName, plainTextPassword) => {
+  try {
+    const mailOptions = {
+      from: `"Org Chart Workspace" <${process.env.SMTP_USER}>`,
+      to: toEmail,
+      subject: `Welcome to Org Chart Workspace - ${companyName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #1B1730; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E4DEF5; border-radius: 12px;">
+          <h2 style="color: #7C3AED;">Welcome to Org Chart Workspace!</h2>
+          <p>Hello,</p>
+          <p>An administrative workspace has been successfully provisioned for <strong>${companyName}</strong>.</p>
+          <p>You can access your organization's dashboard using the credentials below:</p>
+          <div style="background: #F1EDFB; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Login Email:</strong> ${toEmail}</p>
+            <p style="margin: 5px 0;"><strong>Initial Password:</strong> ${plainTextPassword}</p>
+          </div>
+          <p><em>For security purposes, we highly recommend changing your password from the Settings menu upon your first login.</em></p>
+          <br/>
+          <p>Best regards,<br/><strong>The Org Chart Team</strong></p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Welcome email sent to ${toEmail}`);
+  } catch (error) {
+    console.error("❌ Failed to send welcome email:", error);
+  }
+};
+
+// ==========================================
 // MIDDLEWARE: JWT Authentication Bouncer
 // ==========================================
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer <token>"
+  const token = authHeader && authHeader.split(' ')[1]; 
 
   if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: 'Invalid or expired token.' });
-    req.user = user; // Attach the decoded user payload to the request
+    req.user = user; 
     next();
   });
 };
 
-// ==========================================
-// API ROUTES: AI Generation
-// ==========================================
-// app.post('/api/generate-kpi', authenticateToken, async (req, res) => {
-//   const { companyName, role } = req.body;
-  
-//   if (!role) {
-//     return res.status(400).json({ message: "A Title/Designation is required for AI suggestions." });
-//   }
-
-//   // Instruct GPT-4o to return exactly the JSON format we need
-//   const prompt = `You are an expert HR consultant. Based on the following details, suggest appropriate Key Result Areas (KRAs), Key Performance Indicators (KPIs), and a meeting Cadence for this role. Keep points concise (max 1 sentence each).
-  
-//   Organization Context: ${companyName || 'A general business'}
-//   Role/Designation: ${role}
-  
-//   Return ONLY a valid JSON object in this exact format, with 3-5 string points per array:
-//   {
-//     "kras": ["Point 1", "Point 2",...],
-//     "kpis": ["Point 1", "Point 2",....],
-//     "cadence": ["Point 1", "Point 2",...]
-//   }`;
-
-//   try {
-//     const completion = await openai.chat.completions.create({
-//       model: "gpt-4o",
-//       messages: [{ role: "user", content: prompt }],
-//       response_format: { type: "json_object" } // Forces strict JSON response
-//     });
-    
-//     const data = JSON.parse(completion.choices[0].message.content);
-//     res.json(data);
-//   } catch (error) {
-//     console.error("OpenAI Error:", error);
-//     res.status(500).json({ message: "Failed to connect to OpenAI API." });
-//   }
-// });
 
 // ==========================================
 // API ROUTES: Auth
@@ -77,15 +85,12 @@ app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check for Super Admin in DB
     const superAdmin = await SuperAdmin.findOne({ email: email.toLowerCase() });
     if (superAdmin && superAdmin.password === password) {
-      // Include adminId in token so we can find them later for password changes
       const token = jwt.sign({ role: 'superadmin', adminId: superAdmin._id }, process.env.JWT_SECRET, { expiresIn: '12h' });
       return res.json({ token, role: 'superadmin' });
     }
 
-    // Check for Standard User
     const company = await Company.findOne({ email: email.toLowerCase() });
     if (!company || company.password !== password) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -151,7 +156,6 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
 // API ROUTES: Data (Protected)
 // ==========================================
 
-// Get all companies (Superadmin only)
 app.get('/api/companies', authenticateToken, async (req, res) => {
   if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
   
@@ -163,7 +167,7 @@ app.get('/api/companies', authenticateToken, async (req, res) => {
   }
 });
 
-// Create a new company (Superadmin only)
+// Create a new company & SEND EMAIL
 app.post('/api/companies', authenticateToken, async (req, res) => {
   if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
 
@@ -172,15 +176,18 @@ app.post('/api/companies', authenticateToken, async (req, res) => {
     if (existing) return res.status(400).json({ message: 'Email already in use.' });
 
     const savedCompany = await new Company(req.body).save();
+    
+    // NEW: Fire off the welcome email immediately after saving to DB!
+    // We don't await this so it doesn't slow down the frontend response time.
+    sendWelcomeEmail(req.body.email, req.body.companyName, req.body.password);
+
     res.status(201).json(savedCompany);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// Get a specific company by ID
 app.get('/api/companies/:id', authenticateToken, async (req, res) => {
-  // Users can only view their own data. Superadmins can view anyone's.
   if (req.user.role === 'user' && req.user.companyId !== req.params.id) {
     return res.status(403).json({ message: 'Forbidden: You cannot access this organization.' });
   }
@@ -194,7 +201,6 @@ app.get('/api/companies/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Update a company
 app.put('/api/companies/:id', authenticateToken, async (req, res) => {
   if (req.user.role === 'user' && req.user.companyId !== req.params.id) {
     return res.status(403).json({ message: 'Forbidden' });
@@ -208,7 +214,6 @@ app.put('/api/companies/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete a company
 app.delete('/api/companies/:id', authenticateToken, async (req, res) => {
   try {
     await Company.findOneAndDelete({ id: req.params.id });
@@ -223,17 +228,15 @@ app.delete('/api/companies/:id', authenticateToken, async (req, res) => {
 // ==========================================
 app.get('/api/shared/:id', async (req, res) => {
   try {
-    // Find company by custom ID
     const company = await Company.findOne({ id: req.params.id });
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
     
-    // Convert to plain object and remove sensitive data before sending
     const safeCompany = company.toObject();
     delete safeCompany.password;
     delete safeCompany.email;
-    delete safeCompany._id; // Remove internal Mongo ID just to be clean
+    delete safeCompany._id; 
 
     res.json(safeCompany);
   } catch (error) {
@@ -247,14 +250,13 @@ app.get('/api/shared/:id', async (req, res) => {
 // ==========================================
 app.get('/api/my-company', authenticateToken, async (req, res) => {
   try {
-    // Look up the company using the email stored in the authenticated user's JWT token
-    const company = await Company.findOne({ email: req.user.email });
+    // FIX RE-APPLIED: Look up by companyId instead of email
+    const company = await Company.findOne({ id: req.user.companyId });
     
     if (!company) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
 
-    // Remove the password before sending the data to the frontend
     const safeCompany = company.toObject();
     delete safeCompany.password;
 
@@ -270,7 +272,6 @@ mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB');
     
-    // Seed default admin if none exists
     const adminCount = await SuperAdmin.countDocuments();
     if (adminCount === 0) {
       await SuperAdmin.create({

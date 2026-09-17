@@ -346,8 +346,8 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
    MOBILE RESPONSIVENESS OVERRIDES
    ========================================= */
 @media (max-width: 768px) {
-  /* 1. Prevent the entire app from sliding off-screen */
-  html, body {
+  /* 1. Prevent stretching WITHOUT breaking position: sticky */
+  .app-container {
     overflow-x: hidden;
     width: 100%;
   }
@@ -359,27 +359,18 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
     gap: 8px;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden; /* Safety net */
   }
   
-  .brand-block {
-    width: 100%;
-    min-width: 0;
-  }
-  
-  .brand-copy {
-    width: 100%;
-    min-width: 0; /* Crucial: allows flex children to scroll instead of stretching */
-  }
-  
+  .brand-block { width: 100%; min-width: 0; }
+  .brand-copy { width: 100%; min-width: 0; }
   .topbar-logo { height: 28px; }
   .company-title { font-size: 1.4rem; word-break: break-word; }
   .eyebrow { font-size: 10px; margin-bottom: 2px; }
 
-  /* 3. Force Stats into a Single Swipeable Row INSIDE its box */
+  /* 3. Force Stats into a Single Swipeable Row */
   .stats-row {
     width: 100%;
-    max-width: calc(100vw - 28px); /* Viewport width minus padding */
+    max-width: calc(100vw - 28px);
     flex-wrap: nowrap; 
     overflow-x: auto;  
     gap: 6px;
@@ -396,7 +387,7 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
     padding: 4px 10px;
   }
 
-  /* 4. Force Buttons into a Single Swipeable Row INSIDE its box */
+  /* 4. Force Buttons into a Single Swipeable Row */
   .mode-controls {
     width: 100%;
     max-width: calc(100vw - 28px);

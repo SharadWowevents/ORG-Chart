@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { initials, linesOf, deptColor } from '../utils';
 import { ChevronSvg, MinusSvg, PlusSvg } from './Icons';
 
@@ -24,12 +24,30 @@ export const OrgTree = ({ data, onPersonClick, zoomLevel, setZoomLevel }) => {
   const toggle = (id) => setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
 
   // ==========================================
-  // DRAG TO PAN LOGIC (Desktop Mouse Only)
-  // Mobile relies on native momentum scrolling!
+  // DRAG TO PAN & AUTO-CENTER LOGIC
   // ==========================================
   const containerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
+
+  useEffect(() => {
+    // 1. Force 50% zoom if it's a mobile device
+    if (window.innerWidth <= 768) {
+      setZoomLevel(0.5);
+    }
+
+    // 2. Wait a tiny fraction of a second, then center horizontally and force scroll to the top
+    const centerTimer = setTimeout(() => {
+      if (containerRef.current) {
+        const { scrollWidth, clientWidth } = containerRef.current;
+        containerRef.current.scrollLeft = (scrollWidth - clientWidth) / 2;
+        containerRef.current.scrollTop = 0; // Force canvas to the top
+        window.scrollTo(0, 0); // Force the entire browser window to stay at the top!
+      }
+    }, 50);
+
+    return () => clearTimeout(centerTimer);
+  }, [data, setZoomLevel]);
 
   const handleMouseDown = (e) => {
     if (e.target.closest('button') || e.target.closest('.person-card')) return;

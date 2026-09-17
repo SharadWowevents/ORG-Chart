@@ -60,5 +60,13 @@ export const countStats = (orgData) => {
   return { depts, hods, eas, mgrs, team, people };
 };
 
-export const DEPT_PALETTE = ["#F0645A","#F2A93B","#23B5A6","#4E8DF5","#B15CE0","#3FBF63","#F2578C","#3FA7C9"];
-export const deptColor = (colorIndex) => DEPT_PALETTE[Math.abs(colorIndex || 0) % DEPT_PALETTE.length];
+// ==========================================
+// DYNAMIC UNIQUE COLOR GENERATOR
+// ==========================================
+export const deptColor = (colorIndex) => {
+  // Multiply the index by the Golden Angle (137.5 degrees)
+  const hue = Math.round(((colorIndex || 0) * 137.508) % 360);
+  
+  // Return an HSL color with 65% Saturation and 45% Lightness for high contrast
+  return `hsl(${hue}, 65%, 45%)`;
+};
