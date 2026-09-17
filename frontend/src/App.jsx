@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 import { DefaultBrandSvg } from './components/Icons';
 import { countStats } from './utils';
@@ -8,45 +8,6 @@ import { Admin } from './components/Admin';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 
 const API_URL = '/api';
-
-// ==========================================
-// SMART SWIPEABLE ROW (Shows Arrow Hint on Mobile)
-// ==========================================
-const SwipeableRow = ({ children, className }) => {
-  const rowRef = useRef(null);
-  const [showArrow, setShowArrow] = useState(false);
-
-  useEffect(() => {
-    const checkScroll = () => {
-      if (rowRef.current) {
-        const { scrollWidth, clientWidth, scrollLeft } = rowRef.current;
-        // Show arrow only if content is wider than screen AND not fully scrolled
-        setShowArrow(scrollWidth > clientWidth && Math.ceil(scrollLeft + clientWidth) < scrollWidth - 5);
-      }
-    };
-    checkScroll();
-    setTimeout(checkScroll, 150); // Double check after render
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [children]);
-
-  return (
-    <div className="swipe-container">
-      <div 
-        className={className} 
-        ref={rowRef} 
-        onScroll={(e) => {
-          const { scrollWidth, clientWidth, scrollLeft } = e.target;
-          setShowArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 5);
-        }}
-      >
-        {children}
-      </div>
-      {showArrow && <div className="swipe-arrow-hint">→</div>}
-    </div>
-  );
-};
-
 
 export default function App() {
   const [companies, setCompanies] = useState([]);
@@ -65,7 +26,7 @@ export default function App() {
   const [modalPayload, setModalPayload] = useState(null);
 
   // ==========================================
-  // AUTH HELPER 
+  // AUTH HELPER (Attaches Token automatically)
   // ==========================================
   const fetchWithAuth = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
@@ -81,11 +42,13 @@ export default function App() {
     return response;
   };
 
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shareId = params.get('share');
     
     if (shareId) {
+      // Fetch public data
       fetch(`${API_URL}/shared/${shareId}`)
         .then(res => res.json())
         .then(data => {
@@ -93,7 +56,7 @@ export default function App() {
             setActiveCompany(data);
             setScreen('app');
             setMode('view');
-            setIsGuest(true); 
+            setIsGuest(true); // Locks out admin controls
           } else {
             alert("This shared link is invalid or has expired.");
           }
@@ -102,6 +65,9 @@ export default function App() {
     }
   }, []);
 
+  // ==========================================
+  // SESSION PERSISTENCE (Runs on Page Load)
+  // ==========================================
   useEffect(() => {
     const verifySession = async () => {
       const token = localStorage.getItem('token');
@@ -113,6 +79,7 @@ export default function App() {
       try {
         const res = await fetchWithAuth('/verify');
         const data = await res.json();
+
         setUserRole(data.role);
 
         if (data.role === 'superadmin') {
@@ -132,11 +99,14 @@ export default function App() {
   // ==========================================
   // API CALLS
   // ==========================================
+
+  // Super Admin: Force reset an organization's password
   const handleForceChangePassword = async (orgId, newPassword) => {
     const res = await fetchWithAuth(`/companies/${orgId}/force-password`, {
       method: 'PUT',
       body: JSON.stringify({ newPassword })
     });
+
     if (!res.ok) {
       const errorData = await res.json();
       throw new Error(errorData.message || "Failed to reset password.");
@@ -152,6 +122,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials.");
 
@@ -175,6 +146,7 @@ export default function App() {
       method: 'PUT',
       body: JSON.stringify({ currentPassword, newPassword })
     });
+
     if (!res.ok) {
       const errorData = await res.json();
       throw new Error(errorData.message || "Failed to change password.");
@@ -184,11 +156,16 @@ export default function App() {
 
   const handleCreateCompany = async (newComp) => {
     try {
-      const res = await fetchWithAuth('/companies', { method: 'POST', body: JSON.stringify(newComp) });
+      const res = await fetchWithAuth('/companies', {
+        method: 'POST',
+        body: JSON.stringify(newComp)
+      });
+
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.message || 'Failed to create organization');
       }
+
       const savedCompany = await res.json();
       setCompanies([...companies, savedCompany]);
     } catch (err) {
@@ -210,9 +187,13 @@ export default function App() {
 
   const handleUpdateCompany = async (updatedData) => {
     try {
-      const res = await fetchWithAuth(`/companies/${updatedData.id}`, { method: 'PUT', body: JSON.stringify(updatedData) });
+      const res = await fetchWithAuth(`/companies/${updatedData.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedData)
+      });
       const savedData = await res.json();
       setActiveCompany(savedData);
+
       if (userRole === 'superadmin') {
         setCompanies(companies.map(c => c.id === savedData.id ? savedData : c));
       }
@@ -224,6 +205,7 @@ export default function App() {
   const handleDeleteCompany = async (id) => {
     try {
       await fetchWithAuth(`/companies/${id}`, { method: 'DELETE' });
+
       if (userRole === 'superadmin') {
         setCompanies(companies.filter(c => c.id !== id));
         setActiveCompany(null);
@@ -246,6 +228,7 @@ export default function App() {
   // ==========================================
   // RENDER LOGIC
   // ==========================================
+
   if (screen === 'loading') return <div style={{ padding: '50px', textAlign: 'center' }}>Loading session...</div>;
 
   const Topbar = () => {
@@ -263,23 +246,23 @@ export default function App() {
               <h1 className="company-title">
                 {screen === 'app' ? activeCompany?.companyName : 'Administration'}
               </h1>
-              
-              {/* FIX: Wrapped in our new SwipeableRow component */}
+              {/* Removed the mode==='view' restriction so it shows in Settings too, and added all stats */}
               {stats && screen === 'app' && (
-                <SwipeableRow className="stats-row">
+                <div className="stats-row">
                   <span className="stat-pill"><b>{stats.depts}</b> Departments</span>
                   <span className="stat-pill"><b>{stats.hods}</b> HODs</span>
                   <span className="stat-pill"><b>{stats.eas}</b> EAs</span>
                   <span className="stat-pill"><b>{stats.mgrs}</b> Managers</span>
                   <span className="stat-pill"><b>{stats.team}</b> Team members</span>
                   <span className="stat-pill"><b>{stats.people}</b> People total</span>
-                </SwipeableRow>
+                </div>
               )}
             </div>
           </div>
 
-          {/* FIX: Wrapped in our new SwipeableRow component */}
-          <SwipeableRow className="mode-controls">
+          <div className="mode-controls">
+            
+            {/* 1. SHARE BUTTON & VIEW/SETTINGS TOGGLE (Only for Admins) */}
             {screen === 'app' && !isGuest && (
               <>
                 <button 
@@ -296,6 +279,7 @@ export default function App() {
               </>
             )}
             
+            {/* 2. ADMIN ONLY CONTROLS */}
             {!isGuest && userRole === 'superadmin' && screen === 'app' && (
               <button className="btn btn-ghost btn-tiny" onClick={() => { setActiveCompany(null); setScreen('dashboard'); }}>
                 ← Back to Dashboard
@@ -312,8 +296,8 @@ export default function App() {
             {!isGuest && userRole === 'user' && (
                <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
             )}
-          </SwipeableRow>
 
+          </div>
         </div>
       </header>
     );
@@ -331,7 +315,7 @@ export default function App() {
             onDeleteCompany={(id) => window.confirm('Delete this organization?') && handleDeleteCompany(id)}
             onViewCompany={handleViewCompany}
             onLogout={handleLogout}
-            onForceChangePassword={handleForceChangePassword} 
+            onForceChangePassword={handleForceChangePassword} // <-- Pass the new function here
           />
         )}
         {screen === 'app' && activeCompany && (
@@ -348,13 +332,23 @@ export default function App() {
           )
         )}
       </main>
-      
+      {/* GLOBAL MODAL FOR SUPER ADMIN PASSWORD CHANGE */}
       {showSuperAdminPwdModal && (
-        <ChangePasswordModal onClose={() => setShowSuperAdminPwdModal(false)} onSubmit={handleChangePassword} />
+        <ChangePasswordModal
+          onClose={() => setShowSuperAdminPwdModal(false)}
+          onSubmit={handleChangePassword}
+        />
       )}
+      
+      {/* GLOBAL ORG CHART DETAILS MODAL */}
       <Modal payload={modalPayload} onClose={() => setModalPayload(null)} />
+      
+      {/* NEW: CUSTOM SHARE MODAL */}
       {showShareModal && (
-        <ShareModal shareUrl={`${window.location.origin}/?share=${activeCompany?.id}`} onClose={() => setShowShareModal(false)} />
+        <ShareModal 
+          shareUrl={`${window.location.origin}/?share=${activeCompany?.id}`} 
+          onClose={() => setShowShareModal(false)} 
+        />
       )}
     </div>
   );
@@ -387,10 +381,20 @@ const ShareModal = ({ shareUrl, onClose }) => {
         
         <div style={{ display: 'flex', gap: '8px' }}>
           <input 
-            type="text" readOnly value={shareUrl} 
-            style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-strong)', background: 'var(--surface-2)', color: 'var(--ink)', fontSize: '14px', outline: 'none' }} 
+            type="text" 
+            readOnly 
+            value={shareUrl} 
+            style={{ 
+              flex: 1, padding: '10px 14px', borderRadius: '8px', 
+              border: '1px solid var(--border-strong)', background: 'var(--surface-2)', 
+              color: 'var(--ink)', fontSize: '14px', outline: 'none'
+            }} 
           />
-          <button className="btn-view-chart" onClick={handleCopy} style={{ padding: '0 20px', borderRadius: '8px', minWidth: '100px' }}>
+          <button 
+            className="btn-view-chart"
+            onClick={handleCopy}
+            style={{ padding: '0 20px', borderRadius: '8px', minWidth: '100px' }}
+          >
             {copied ? "Copied! ✓" : "Copy"}
           </button>
         </div>
