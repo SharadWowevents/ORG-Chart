@@ -89,7 +89,7 @@ app.post('/api/login', async (req, res) => {
     const superAdmin = await SuperAdmin.findOne({ email: email.toLowerCase() });
     if (superAdmin && superAdmin.password === password) {
       const token = jwt.sign({ role: 'superadmin', adminId: superAdmin._id }, process.env.JWT_SECRET, { expiresIn: '12h' });
-      return res.json({ token, role: 'superadmin' });
+      return res.json({ token, role: 'superadmin', adminId: superAdmin.id });
     }
 
     const company = await Company.findOne({ email: email.toLowerCase() });
@@ -122,7 +122,7 @@ app.put('/api/companies/:id/force-password', authenticateToken, async (req, res)
 
 // 2. Verify Session
 app.get('/api/verify', authenticateToken, (req, res) => {
-  res.json({ role: req.user.role, companyId: req.user.companyId });
+  res.json({ role: req.user.role, companyId: req.user.companyId, adminId: req.user.adminId });
 });
 
 // 3. Change Password (For BOTH Admin and User)

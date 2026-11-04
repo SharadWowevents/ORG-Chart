@@ -248,6 +248,14 @@ button, input, textarea { font-family: inherit; font-size: inherit; color: inher
 .modal-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
 .modal-list li { font-size: 13.5px; font-weight: 600; }
 .modal-empty { font-size: 13px; color: var(--ink-soft); font-style: italic; margin: 0; }
+.privacy-policy-backdrop { z-index: 200; }
+.privacy-policy-modal { --card-accent: var(--accent); max-width: 680px; }
+.privacy-policy-header { margin-bottom: 18px; padding-right: 28px; }
+.privacy-policy-header .eyebrow { margin-bottom: 6px; }
+.privacy-policy-content { display: flex; flex-direction: column; gap: 12px; color: var(--ink-soft); font-size: 13.5px; }
+.privacy-policy-content p { margin: 0; }
+.privacy-policy-content strong { color: var(--ink); }
+.privacy-policy-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes popIn { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
 

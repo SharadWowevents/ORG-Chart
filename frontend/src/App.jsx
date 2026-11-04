@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import { DefaultBrandSvg } from './components/Icons';
 import { countStats } from './utils';
@@ -6,8 +6,13 @@ import { LoginScreen, SuperAdminDashboard } from './components/AuthScreens';
 import { OrgTree, Modal } from './components/OrgComponents';
 import { Admin } from './components/Admin';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 
 const API_URL = '/api';
+const PRIVACY_POLICY_VERSION = '1';
+
+const getPrivacyPolicyStorageKey = (role, userId) =>
+  `privacy-policy-accepted:v${PRIVACY_POLICY_VERSION}:${role}:${userId}`;
 
 // ==========================================
 // SMART SWIPEABLE ROW (Shows Arrow Hint on Mobile)
@@ -57,6 +62,8 @@ export default function App() {
   const [screen, setScreen] = useState('loading');
   const [mode, setMode] = useState('view');
   const [userRole, setUserRole] = useState(null);
+  const [privacyPolicyStorageKey, setPrivacyPolicyStorageKey] = useState(null);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   const [loginError, setLoginError] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -113,6 +120,9 @@ export default function App() {
         const data = await res.json();
 
         setUserRole(data.role);
+        const storageKey = getPrivacyPolicyStorageKey(data.role, data.adminId || data.companyId);
+        setPrivacyPolicyStorageKey(storageKey);
+        setShowPrivacyPolicy(localStorage.getItem(storageKey) !== 'true');
 
         if (data.role === 'superadmin') {
           const compsRes = await fetchWithAuth('/companies');
@@ -156,6 +166,9 @@ export default function App() {
 
       localStorage.setItem('token', data.token);
       setUserRole(data.role);
+      const storageKey = getPrivacyPolicyStorageKey(data.role, data.adminId || data.companyId);
+      setPrivacyPolicyStorageKey(storageKey);
+      setShowPrivacyPolicy(localStorage.getItem(storageKey) !== 'true');
 
       if (data.role === 'superadmin') {
         const compsRes = await fetchWithAuth('/companies');
@@ -239,7 +252,17 @@ export default function App() {
     localStorage.removeItem('token');
     setUserRole(null);
     setActiveCompany(null);
+    setPrivacyPolicyStorageKey(null);
+    setShowPrivacyPolicy(false);
     setScreen('login');
+  };
+
+  const handleAgreePrivacyPolicy = () => {
+    if (!privacyPolicyStorageKey) {
+      throw new Error('Unable to save privacy policy acceptance for this account.');
+    }
+    localStorage.setItem(privacyPolicyStorageKey, 'true');
+    setShowPrivacyPolicy(false);
   };
 
   // ==========================================
@@ -368,6 +391,9 @@ export default function App() {
       <Modal payload={modalPayload} onClose={() => setModalPayload(null)} />
       {showShareModal && (
         <ShareModal shareUrl={`${window.location.origin}/?share=${activeCompany?.id}`} onClose={() => setShowShareModal(false)} />
+      )}
+      {showPrivacyPolicy && (
+        <PrivacyPolicyModal onAgree={handleAgreePrivacyPolicy} onSignOut={handleLogout} />
       )}
     </div>
   );
