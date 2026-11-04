@@ -4,7 +4,7 @@ import { uid } from '../utils';
 // ----------------------------------------
 // Standard Login Screen
 // ----------------------------------------
-export const LoginScreen = ({ onLogin, error }) => {
+export const LoginScreen = ({ onLogin, error, onOpenPrivacyPolicy }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
@@ -48,6 +48,26 @@ export const LoginScreen = ({ onLogin, error }) => {
           {error && <div className="auth-error">{error}</div>}
           
           <button className="btn-view-chart" onClick={handleLogin} style={{ width: '100%', marginTop: '8px' }}>Log in</button>
+
+          {onOpenPrivacyPolicy && (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <button 
+                type="button" 
+                onClick={onOpenPrivacyPolicy}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'var(--ink-soft)', 
+                  fontSize: '12px', 
+                  cursor: 'pointer', 
+                  textDecoration: 'underline',
+                  padding: '4px'
+                }}
+              >
+                Privacy Policy
+              </button>
+            </div>
+          )}
         </div>
 
       </div>

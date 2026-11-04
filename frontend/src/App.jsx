@@ -11,8 +11,10 @@ import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 const API_URL = '/api';
 const PRIVACY_POLICY_VERSION = '1';
 
-const getPrivacyPolicyStorageKey = (role, userId) =>
-  `privacy-policy-accepted:v${PRIVACY_POLICY_VERSION}:${role}:${userId}`;
+const getPrivacyPolicyStorageKey = (role, userId) => {
+  const safeId = userId || (role === 'superadmin' ? 'superadmin' : 'user');
+  return `privacy-policy-accepted:v${PRIVACY_POLICY_VERSION}:${role}:${safeId}`;
+};
 
 // ==========================================
 // SMART SWIPEABLE ROW (Shows Arrow Hint on Mobile)
@@ -64,6 +66,7 @@ export default function App() {
   const [userRole, setUserRole] = useState(null);
   const [privacyPolicyStorageKey, setPrivacyPolicyStorageKey] = useState(null);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [isPolicyMandatory, setIsPolicyMandatory] = useState(false);
 
   const [loginError, setLoginError] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -122,7 +125,11 @@ export default function App() {
         setUserRole(data.role);
         const storageKey = getPrivacyPolicyStorageKey(data.role, data.adminId || data.companyId);
         setPrivacyPolicyStorageKey(storageKey);
-        setShowPrivacyPolicy(localStorage.getItem(storageKey) !== 'true');
+        const hasAccepted = localStorage.getItem(storageKey) === 'true';
+        if (!hasAccepted) {
+          setIsPolicyMandatory(true);
+          setShowPrivacyPolicy(true);
+        }
 
         if (data.role === 'superadmin') {
           const compsRes = await fetchWithAuth('/companies');
@@ -168,7 +175,11 @@ export default function App() {
       setUserRole(data.role);
       const storageKey = getPrivacyPolicyStorageKey(data.role, data.adminId || data.companyId);
       setPrivacyPolicyStorageKey(storageKey);
-      setShowPrivacyPolicy(localStorage.getItem(storageKey) !== 'true');
+      const hasAccepted = localStorage.getItem(storageKey) === 'true';
+      if (!hasAccepted) {
+        setIsPolicyMandatory(true);
+        setShowPrivacyPolicy(true);
+      }
 
       if (data.role === 'superadmin') {
         const compsRes = await fetchWithAuth('/companies');
@@ -254,15 +265,27 @@ export default function App() {
     setActiveCompany(null);
     setPrivacyPolicyStorageKey(null);
     setShowPrivacyPolicy(false);
+    setIsPolicyMandatory(false);
     setScreen('login');
   };
 
   const handleAgreePrivacyPolicy = () => {
-    if (!privacyPolicyStorageKey) {
-      throw new Error('Unable to save privacy policy acceptance for this account.');
+    if (privacyPolicyStorageKey) {
+      localStorage.setItem(privacyPolicyStorageKey, 'true');
     }
-    localStorage.setItem(privacyPolicyStorageKey, 'true');
     setShowPrivacyPolicy(false);
+    setIsPolicyMandatory(false);
+  };
+
+  const handleOpenPrivacyPolicy = () => {
+    setIsPolicyMandatory(false);
+    setShowPrivacyPolicy(true);
+  };
+
+  const handleClosePrivacyPolicy = () => {
+    if (!isPolicyMandatory) {
+      setShowPrivacyPolicy(false);
+    }
   };
 
   // ==========================================
@@ -332,21 +355,34 @@ export default function App() {
               </>
             )}
             
-            {!isGuest && userRole === 'superadmin' && screen === 'app' && (
-              <button className="btn btn-ghost btn-tiny" onClick={() => { setActiveCompany(null); setScreen('dashboard'); }}>
-                ← Back to Dashboard
+            {isGuest && (
+              <button className="btn btn-ghost btn-tiny" onClick={handleOpenPrivacyPolicy}>
+                Privacy Policy
               </button>
+            )}
+
+            {!isGuest && userRole === 'superadmin' && screen === 'app' && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn btn-ghost btn-tiny" onClick={handleOpenPrivacyPolicy}>Privacy Policy</button>
+                <button className="btn btn-ghost btn-tiny" onClick={() => { setActiveCompany(null); setScreen('dashboard'); }}>
+                  ← Back to Dashboard
+                </button>
+              </div>
             )}
 
             {!isGuest && userRole === 'superadmin' && screen === 'dashboard' && (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn btn-ghost btn-tiny" onClick={() => setShowSuperAdminPwdModal(true)}>Change Password</button>
+                <button className="btn btn-ghost btn-tiny" onClick={handleOpenPrivacyPolicy}>Privacy Policy</button>
                 <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
               </div>
             )}
 
             {!isGuest && userRole === 'user' && (
-               <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn btn-ghost btn-tiny" onClick={handleOpenPrivacyPolicy}>Privacy Policy</button>
+                <button className="btn btn-ghost btn-tiny" onClick={handleLogout}>Sign Out</button>
+              </div>
             )}
           </SwipeableRow>
 
@@ -359,7 +395,7 @@ export default function App() {
     <div className="app-container">
       {screen !== 'login' && <Topbar />}
       <main className={`wrap ${mode === 'view' && screen === 'app' ? 'wrap-full' : ''}`}>
-        {screen === 'login' && <LoginScreen onLogin={handleLogin} error={loginError} />}
+        {screen === 'login' && <LoginScreen onLogin={handleLogin} error={loginError} onOpenPrivacyPolicy={handleOpenPrivacyPolicy} />}
         {screen === 'dashboard' && userRole === 'superadmin' && (
           <SuperAdminDashboard
             companies={companies}
@@ -393,7 +429,12 @@ export default function App() {
         <ShareModal shareUrl={`${window.location.origin}/?share=${activeCompany?.id}`} onClose={() => setShowShareModal(false)} />
       )}
       {showPrivacyPolicy && (
-        <PrivacyPolicyModal onAgree={handleAgreePrivacyPolicy} onSignOut={handleLogout} />
+        <PrivacyPolicyModal 
+          isMandatory={isPolicyMandatory}
+          onAgree={handleAgreePrivacyPolicy} 
+          onSignOut={handleLogout} 
+          onClose={handleClosePrivacyPolicy} 
+        />
       )}
     </div>
   );
